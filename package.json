@@ -1,0 +1,36 @@
+{
+  "name": "ledgerly",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "latest",
+    "lucide-react": "latest",
+    "pdfjs-dist": "6.2.108",
+    "react": "latest",
+    "react-dom": "latest",
+    "recharts": "latest",
+    "vite": "latest",
+    "xlsx": "latest"
+  },
+  "devDependencies": {
+    "@eslint/js": "latest",
+    "@types/node": "^26.2.0",
+    "@types/react": "latest",
+    "@types/react-dom": "latest",
+    "eslint": "latest",
+    "eslint-plugin-react-hooks": "latest",
+    "eslint-plugin-react-refresh": "latest",
+    "globals": "latest",
+    "typescript": "~5.9.3",
+    "typescript-eslint": "latest",
+    "vitest": "latest"
+  }
+}

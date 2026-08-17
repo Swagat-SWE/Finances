@@ -1,0 +1,12 @@
+export type Account = { id: string; institution: string; displayName: string; type: 'credit' | 'debit'; lastFour: string; color: string; active: boolean }
+export type Category = { id: string; name: string; color: string; subcategories: string[] }
+export type TransactionType = 'purchase' | 'payment' | 'refund' | 'credit' | 'fee' | 'interest' | 'transfer' | 'other'
+export type Transaction = { id: string; accountId: string; statementId: string; transactionDate: string; postedDate?: string; merchantRaw: string; merchantNormalized: string; description: string; amount: number; currency: 'USD'; categoryId: string; sourceCategory?: string; subcategory: string; transactionType: TransactionType; sourceFile: string; sourcePage?: number; confidence: number }
+export type ImportStatus = 'queued' | 'processing' | 'ready' | 'warning' | 'failed' | 'imported' | 'duplicate'
+export type PdfType = 'TEXT_PDF' | 'IMAGE_PDF' | 'HYBRID_PDF'
+export type DocumentType = 'TRANSACTION_STATEMENT' | 'YEAR_TO_DATE_SUMMARY' | 'SPENDING_REPORT' | 'ACCOUNT_SUMMARY' | 'UNKNOWN'
+export type RawTransaction = { rawDate: string; rawPostedDate?: string; rawDescription: string; rawAmount: string | number; rawCategory?: string; rawTransactionType?: string; rawAccount?: string; sourceFile: string; sourcePage?: number; parser: string; confidence: number }
+export type ReviewFlag = { field: 'date' | 'amount' | 'account' | 'type' | 'merchant' | 'category' | 'duplicate'; message: string }
+export type ReviewTransaction = { transaction: Transaction; flags: ReviewFlag[] }
+export type Statement = { id: string; fileName: string; institution?: string; accountId?: string; accountName?: string; statementStartDate?: string; statementEndDate?: string; importedAt?: string; status: ImportStatus; transactionCount: number; fileSize: number; fingerprint: string; parser?: string; documentType?: DocumentType; pdfType?: PdfType; warnings?: string[]; message?: string; sourceFile?: File }
+export type ImportResult = { statement: Statement; transactions: ReviewTransaction[] }
