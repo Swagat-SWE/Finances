@@ -729,10 +729,10 @@ main{position:relative;z-index:1;min-height:100vh;background:#fff;border-radius:
 .app-shell:has(.modal-backdrop) .sidebar{z-index:0;filter:blur(6px) saturate(.72);opacity:.58;pointer-events:none;transition:filter .18s ease,opacity .18s ease}
 .intro-splash{position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:#fff;color:#000;text-align:center}
 .intro-splash-content{width:min(100%,900px);padding:48px 24px}
-.intro-splash-heading{margin:0;color:#000;font-family:'Playfair Display',serif;font-size:60px;font-weight:700;line-height:1.08;letter-spacing:-.01em}
+.intro-splash-heading{margin:0;color:#000;font-family:'Playfair Display',serif;font-size:60px;font-weight:700;line-height:1.08;letter-spacing:.02em}
 .intro-splash-heading>.intro-splash-word{display:inline-block;white-space:nowrap}
 .intro-splash-heading>.intro-splash-word>span{display:inline-block;opacity:0;transform:translateY(14px);animation:intro-letter-reveal .7s cubic-bezier(.22,.8,.28,1) forwards}
-.intro-splash-signature{width:min(100%,820px);margin:32px 0 0;padding-right:12px;color:#000;font-family:'Playfair Display',serif;font-size:27px;font-weight:500;line-height:1.25;text-align:right}
+.intro-splash-signature{width:min(100%,820px);margin:32px 0 0;padding-right:12px;color:#000;font-family:'Playfair Display',serif;font-size:27px;font-weight:500;line-height:1.25;letter-spacing:.02em;text-align:right}
 .intro-splash-signature>.intro-splash-word{display:inline-block;white-space:nowrap}
 .intro-splash-signature>.intro-splash-word>span{display:inline-block;opacity:0;transform:translateY(10px);animation:intro-letter-reveal .7s cubic-bezier(.22,.8,.28,1) forwards}
 .thank-you-state{display:grid;justify-items:center;min-height:250px;padding:58px 22px 30px;color:#000;text-align:center}
