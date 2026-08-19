@@ -770,6 +770,14 @@ export default function App() {
       setTourStep('dashboard-spending-drawer-close')
       return
     }
+    if (tourStep === 'dashboard-spending-ytd') {
+      const expand = document.querySelector<HTMLElement>('[data-tour="spending-expand"]') ?? document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-expand')
+      if (expand) {
+        expand.click()
+        window.requestAnimationFrame(() => setTourStep('dashboard-spending-modal-close'))
+      } else setTourStep('dashboard-spending-expand')
+      return
+    }
     const nextStep: Partial<Record<TourStep, TourStep>> = {
       'dashboard-hide-numbers': 'dashboard-total-spending',
       'dashboard-total-spending': 'dashboard-spending-chart',
