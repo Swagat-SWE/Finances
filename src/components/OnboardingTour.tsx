@@ -5,6 +5,7 @@ export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import
 type Props = {
   step: TourStep
   onSkip: () => void
+  onNext: () => void
   onBack?: () => void
 }
 
@@ -92,7 +93,7 @@ const fallbackTargets: Record<string, () => HTMLElement | null> = {
   'overview-accounts': () => Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(section => section.querySelector('h2')?.textContent?.trim() === 'Accounts') ?? null,
 }
 
-export default function OnboardingTour({ step, onSkip, onBack }: Props) {
+export default function OnboardingTour({ step, onSkip, onNext }: Props) {
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [placeAbove, setPlaceAbove] = useState(false)
   const [popoverHeight, setPopoverHeight] = useState(190)
@@ -148,8 +149,6 @@ export default function OnboardingTour({ step, onSkip, onBack }: Props) {
   const focusLeft = Math.max(0, targetRect.left - 7)
   const focusRight = Math.min(window.innerWidth, targetRect.left + targetRect.width + 7)
   const focusBottom = Math.min(window.innerHeight, targetRect.top + targetRect.height + 7)
-  const showBack = Boolean(content.back && onBack)
-
   return <div className="onboarding-tour" role="presentation">
     <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: 0, left: 0, right: 0, height: focusTop }}/>
     <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: focusTop, left: 0, width: focusLeft, height: focusBottom - focusTop }}/>
@@ -162,7 +161,7 @@ export default function OnboardingTour({ step, onSkip, onBack }: Props) {
       <h2>{content.title}</h2>
       <p>{content.body}</p>
       <div className="onboarding-tour-actions">
-        {showBack ? <button type="button" className="onboarding-tour-back" onClick={onBack}>Back</button> : <span aria-hidden="true"/>}
+        <button type="button" className="onboarding-tour-next" onClick={onNext}>Next</button>
         <button type="button" className="onboarding-tour-skip onboarding-tour-right-action" onClick={onSkip}>Skip tour</button>
       </div>
     </section>

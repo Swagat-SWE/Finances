@@ -774,8 +774,8 @@ main{position:relative;z-index:1;min-height:100vh;background:#fff;border-radius:
 .onboarding-tour-popover h2{font:700 17px 'Plus Jakarta Sans';letter-spacing:-.25px;color:#28263b}
 .onboarding-tour-popover>p:not(.eyebrow){font-size:12px;line-height:1.55;color:#777584;margin:0}
 .onboarding-tour-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:3px}
-.onboarding-tour-skip,.onboarding-tour-back{padding:7px 0;border:0;background:transparent;color:#5965d6;font:600 12px inherit;cursor:pointer}
-.onboarding-tour-skip:hover,.onboarding-tour-back:hover{text-decoration:underline;text-underline-offset:3px}
+.onboarding-tour-skip,.onboarding-tour-next,.onboarding-tour-back{padding:7px 0;border:0;background:transparent;color:#5965d6;font:600 12px inherit;cursor:pointer}
+.onboarding-tour-skip:hover,.onboarding-tour-next:hover,.onboarding-tour-back:hover{text-decoration:underline;text-underline-offset:3px}
 .onboarding-tour-right-action{margin-left:auto}
 .onboarding-tour-arrow{position:absolute;width:13px;height:13px;background:#fff;border-left:1px solid #deddf0;border-top:1px solid #deddf0;transform:rotate(45deg);left:calc(50% - 7px);top:-7px}
 .onboarding-tour-popover.above .onboarding-tour-arrow{top:auto;bottom:-7px;transform:rotate(225deg)}

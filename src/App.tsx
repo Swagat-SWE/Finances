@@ -410,22 +410,6 @@ export default function App() {
     return () => window.clearTimeout(timer)
   }, [])
   useEffect(() => {
-    const nextStep: Partial<Record<TourStep, TourStep>> = {
-      'dashboard-hide-numbers': 'dashboard-total-spending',
-      'dashboard-total-spending': 'dashboard-spending-chart',
-      'dashboard-spending-chart': 'dashboard-weekday',
-      'dashboard-weekday': 'dashboard-merchants',
-      'dashboard-merchants': 'dashboard-categories',
-      'dashboard-categories': 'dashboard-accounts',
-      'dashboard-accounts': 'dashboard-total',
-    }
-    const next = nextStep[tourStep]
-    if (!next && tourStep !== 'dashboard-total') return
-    const delay = tourStep === 'dashboard-total' ? 7600 : 5200
-    const timer = window.setTimeout(() => { if (tourStep === 'dashboard-total') skipTour(); else if (next) setTourStep(next) }, delay)
-    return () => window.clearTimeout(timer)
-  }, [tourStep])
-  useEffect(() => {
     if (!selectedChartPoint) return
     const handleKeyDown = (event: KeyboardEvent) => { if (event.key === 'Escape') setSelectedChartPoint(null) }
     document.addEventListener('keydown', handleKeyDown)
@@ -645,6 +629,21 @@ export default function App() {
     const previous = previousStep[tourStep]
     if (previous) setTourStep(previous)
   }
+  const dashboardTourNext = () => {
+    if (tourStep === 'dashboard-import') { setView('import'); setTourStep('import-dropzone'); return }
+    const nextStep: Partial<Record<TourStep, TourStep>> = {
+      'dashboard-hide-numbers': 'dashboard-total-spending',
+      'dashboard-total-spending': 'dashboard-spending-chart',
+      'dashboard-spending-chart': 'dashboard-weekday',
+      'dashboard-weekday': 'dashboard-merchants',
+      'dashboard-merchants': 'dashboard-categories',
+      'dashboard-categories': 'dashboard-accounts',
+      'dashboard-accounts': 'dashboard-total',
+    }
+    const next = nextStep[tourStep]
+    if (next) setTourStep(next)
+    else if (tourStep === 'dashboard-total') skipTour()
+  }
   const deleteAccount = (accountId: string) => {
     const statementIds = new Set(importedTransactions.filter(transaction => transaction.accountId === accountId).map(transaction => transaction.statementId))
     setImportedTransactions(current => current.filter(transaction => transaction.accountId !== accountId))
@@ -676,7 +675,7 @@ export default function App() {
     </>}
     </main>
     {introSplashVisible && <div className="intro-splash" role="status" aria-live="polite"><div className="intro-splash-content"><h1 className="intro-splash-heading" aria-label="Let's make you aware of your finance">{"Let's make you aware of your finance".split(' ').map((word, wordIndex, words) => <span className="intro-splash-word" key={`${word}-${wordIndex}`} aria-hidden="true">{Array.from(word).map((character, index) => <span key={`${word}-${index}`} aria-hidden="true" style={{ animationDelay: `${(wordIndex * 8 + index) * 32}ms` }}>{character}</span>)}{wordIndex < words.length - 1 ? '\u00a0' : ''}</span>)}</h1><p className="intro-splash-signature" aria-label="Project by Swagat Karki">{"Project by Swagat Karki".split(' ').map((word, wordIndex, words) => <span className="intro-splash-word" key={`${word}-${wordIndex}`} aria-hidden="true">{Array.from(word).map((character, index) => <span key={`${word}-${index}`} aria-hidden="true" style={{ animationDelay: `${1.55 + (wordIndex * 8 + index) * 32 / 1000}s` }}>{character}</span>)}{wordIndex < words.length - 1 ? '\u00a0' : ''}</span>)}</p></div></div>}
-    <OnboardingTour step={tourStep} onSkip={skipTour} onBack={dashboardTourBack}/>
+    <OnboardingTour step={tourStep} onSkip={skipTour} onNext={dashboardTourNext} onBack={dashboardTourBack}/>
   </div>
 }
 
