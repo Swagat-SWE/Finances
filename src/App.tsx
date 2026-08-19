@@ -701,10 +701,10 @@ export default function App() {
     setOpenCategoryMenu(false)
     setActiveNav('Overview')
     setTourScope('full')
-    // Start at the first actionable control for the main dashboard. The
-    // Statements archive is already past ingestion, so its full tour begins
-    // at the dashboard privacy control as before.
-    setTourStep(activeNav === 'Statements' ? 'dashboard-hide-numbers' : 'dashboard-import')
+    // A populated dashboard is already past ingestion, so restart its tour at
+    // Hide numbers. Only an empty/initial dashboard needs the Import
+    // statements step first; the Statements archive is also past ingestion.
+    setTourStep(activeNav === 'Statements' || dataset.length > 0 ? 'dashboard-hide-numbers' : 'dashboard-import')
   }
   const startCurrentPageTour = () => {
     const starts: Record<string, TourStep> = {
