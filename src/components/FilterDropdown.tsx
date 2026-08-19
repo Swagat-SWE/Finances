@@ -1,4 +1,4 @@
-import { Fragment, useEffect, useRef, useState, type CSSProperties } from 'react'
+import { useEffect, useRef, useState, type CSSProperties } from 'react'
 import { Check, ChevronDown } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 
@@ -13,9 +13,10 @@ type FilterDropdownProps = {
   wide?: boolean
   compact?: boolean
   hideLabel?: boolean
+  tourTarget?: string
 }
 
-export default function FilterDropdown({ label, value, options, onChange, wide = false, compact = false, hideLabel = false }: FilterDropdownProps) {
+export default function FilterDropdown({ label, value, options, onChange, wide = false, compact = false, hideLabel = false, tourTarget }: FilterDropdownProps) {
   const rootRef = useRef<HTMLDivElement>(null)
   const optionRefs = useRef<Record<string, HTMLButtonElement | null>>({})
   const [open, setOpen] = useState(false)
@@ -53,6 +54,12 @@ export default function FilterDropdown({ label, value, options, onChange, wide =
 
   const compactWidth = compact ? `${Math.max(84, (selected?.label?.length ?? 3) * 8.5 + 42)}px` : undefined
   const compactStyle = compact ? { width: compactWidth } as CSSProperties : undefined
+  const groupedOptions = options.reduce<Array<{ name?: string; items: FilterDropdownOption[] }>>((groups, option) => {
+    const previous = groups[groups.length - 1]
+    if (previous && previous.name === option.group) previous.items.push(option)
+    else groups.push({ name: option.group, items: [option] })
+    return groups
+  }, [])
 
   const toggle = () => {
     if (open) {
@@ -65,12 +72,20 @@ export default function FilterDropdown({ label, value, options, onChange, wide =
   }
 
   return <div className={`filter-dropdown ${wide ? 'filter-dropdown-wide' : ''} ${compact ? 'filter-dropdown-compact' : ''}`} style={compactStyle} ref={rootRef}>
-    <button className={`filter-dropdown-trigger ${open ? 'is-open' : ''} ${placement}`} aria-expanded={open} aria-haspopup="listbox" onClick={toggle}>
+    <button data-tour={tourTarget} className={`filter-dropdown-trigger ${open ? 'is-open' : ''} ${placement}`} aria-expanded={open} aria-haspopup="listbox" onClick={toggle}>
       <span className="filter-dropdown-copy">{!hideLabel && <span className="filter-dropdown-label">{label}:</span>}<strong>{selected?.label ?? 'All'}</strong></span>
       <ChevronDown size={14}/>
     </button>
     {open && <div className={`filter-dropdown-popover ${placement}`} role="listbox" aria-label={label}>
-      {options.map((option, index) => <Fragment key={option.value}>{option.group && (index === 0 || options[index - 1].group !== option.group) && <div className={`filter-dropdown-group-label ${index > 0 ? 'with-divider' : ''}`} role="presentation">{option.group}</div>}<button ref={node => { optionRefs.current[option.value] = node }} role="option" aria-selected={option.value === value} className={option.value === value ? 'active' : ''} onClick={() => choose(option.value)}><span>{option.label}</span>{option.value === value && <Check size={14}/>}</button></Fragment>)}
+      {groupedOptions.map((group, groupIndex) => {
+        const isSelfMade = group.name === 'SELF-MADE FILTERS'
+        const isSourceGroup = Boolean(group.name) && group.name !== 'CREDIT CARD FILTERS' && !isSelfMade
+        const groupTourTarget = isSelfMade ? 'overview-self-made-filters' : (isSourceGroup && groupIndex === 2 ? 'overview-source-filter-group' : undefined)
+        return <div className="filter-dropdown-group" data-tour={groupTourTarget} key={`${group.name ?? 'ungrouped'}-${groupIndex}`}>
+          {group.name && <div className={`filter-dropdown-group-label ${groupIndex > 0 ? 'with-divider' : ''}`} role="presentation">{group.name}</div>}
+          {group.items.map(option => <button key={option.value} ref={node => { optionRefs.current[option.value] = node }} role="option" aria-selected={option.value === value} className={option.value === value ? 'active' : ''} onClick={() => choose(option.value)}><span>{option.label}</span>{option.value === value && <Check size={14}/>}</button>)}
+        </div>
+      })}
     </div>}
   </div>
 }

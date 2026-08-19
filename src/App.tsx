@@ -426,7 +426,20 @@ export default function App() {
       if (tourStep === 'dashboard-merchants-view-all' && button.matches('.monthly-merchant-panel .monthly-panel-heading .text-button')) { setTourStep('dashboard-merchants-modal-close'); return }
       if (tourStep === 'dashboard-categories-view-all' && heading === 'Categories' && buttonLabel === 'View all') { setTourStep('dashboard-categories-modal-close'); return }
       if (tourStep === 'dashboard-accounts-manage' && heading === 'Accounts' && buttonLabel === 'Manage') { setTourStep('dashboard-accounts-modal-close'); return }
-      if (tourStep === 'dashboard-category-filter' && button.matches('.filters .filter-dropdown-wide .filter-dropdown-trigger')) { setTourStep('dashboard-self-made-filters'); return }
+      if ((tourStep === 'dashboard-categories' || tourStep === 'dashboard-category-filter') && button.matches('.filters .filter-dropdown-wide .filter-dropdown-trigger')) { setTourStep('dashboard-self-made-filters'); return }
+      if (tourStep === 'dashboard-spending-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Spending') { setTourStep('dashboard-spending'); return }
+      if ((tourStep === 'dashboard-self-made-filters' || tourStep === 'dashboard-source-filters') && button.closest('.filters .filter-dropdown-wide .filter-dropdown-popover')) {
+        window.setTimeout(() => {
+          const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
+          if (trigger?.getAttribute('aria-expanded') !== 'true') trigger?.click()
+        }, 0)
+      }
+      if (tourStep === 'dashboard-category-accounts' && button.closest('.filters .filter-dropdown:not(.filter-dropdown-wide) .filter-dropdown-popover')) {
+        window.setTimeout(() => {
+          const trigger = document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')
+          if (trigger?.getAttribute('aria-expanded') !== 'true') trigger?.click()
+        }, 0)
+      }
       if (tourStep === 'dashboard-spending-expand' && button.matches('.spending-flow-card-combined .spending-flow-expand')) { setTourStep('dashboard-spending-modal-close'); return }
       if (button.matches('.modal-close')) {
         if (tourStep === 'dashboard-merchants-modal-close') setTourStep('dashboard-categories')
@@ -642,26 +655,66 @@ export default function App() {
   const beginTourIfNeeded = () => setTourStep('dashboard-import')
   const finishTour = skipImportTour
   const dashboardTourBack = () => {
+    if (['dashboard-self-made-filters', 'dashboard-source-filters', 'dashboard-category-accounts'].includes(tourStep)) {
+      const categoryTrigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
+      const accountTrigger = document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')
+      if (categoryTrigger?.getAttribute('aria-expanded') === 'true') categoryTrigger.click()
+      if (accountTrigger?.getAttribute('aria-expanded') === 'true') accountTrigger.click()
+    }
     const previousStep: Partial<Record<TourStep, TourStep>> = {
+      'dashboard-hide-numbers': 'dashboard-import',
+      'dashboard-total-spending': 'dashboard-hide-numbers',
       'dashboard-spending-chart': 'dashboard-total-spending',
       'dashboard-weekday': 'dashboard-spending-chart',
       'dashboard-merchants': 'dashboard-weekday',
       'dashboard-categories': 'dashboard-merchants',
       'dashboard-accounts': 'dashboard-categories',
       'dashboard-total': 'dashboard-accounts',
+      'dashboard-category-filter': 'dashboard-total',
+      'dashboard-self-made-filters': 'dashboard-categories',
+      'dashboard-source-filters': 'dashboard-self-made-filters',
+      'dashboard-category-accounts': 'dashboard-source-filters',
+      'dashboard-category-card-breakdown': 'dashboard-category-accounts',
+      'dashboard-spending-nav': 'dashboard-category-card-breakdown',
+      'dashboard-spending': 'dashboard-spending-nav',
+      'dashboard-spending-ytd': 'dashboard-spending',
+      'dashboard-spending-expand': 'dashboard-spending-ytd',
     }
     const previous = previousStep[tourStep]
     if (previous) setTourStep(previous)
   }
   const dashboardTourNext = () => {
     if (tourStep === 'dashboard-import') { setView('import'); setTourStep('import-dropzone'); return }
+    if (tourStep === 'dashboard-categories') {
+      const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
+      if (trigger && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
+      setTourStep('dashboard-self-made-filters')
+      return
+    }
+    if (tourStep === 'dashboard-merchants-view-all') {
+      document.querySelector<HTMLElement>('[data-tour="overview-top-merchants-view-all"]')?.click()
+      setTourStep('dashboard-merchants-modal-close')
+      return
+    }
+    if (tourStep === 'dashboard-categories-view-all') {
+      const section = Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(candidate => candidate.querySelector('h2')?.textContent?.trim() === 'Categories')
+      section?.querySelector<HTMLElement>('.text-button')?.click()
+      setTourStep('dashboard-categories-modal-close')
+      return
+    }
+    if (tourStep === 'dashboard-accounts-manage') {
+      const section = Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(candidate => candidate.querySelector('h2')?.textContent?.trim() === 'Accounts')
+      section?.querySelector<HTMLElement>('.text-button')?.click()
+      setTourStep('dashboard-accounts-modal-close')
+      return
+    }
     const nextStep: Partial<Record<TourStep, TourStep>> = {
       'dashboard-hide-numbers': 'dashboard-total-spending',
       'dashboard-total-spending': 'dashboard-spending-chart',
       'dashboard-spending-chart': 'dashboard-weekday',
       'dashboard-weekday': 'dashboard-merchants',
       'dashboard-merchants': 'dashboard-merchants-view-all',
-      'dashboard-categories': 'dashboard-categories-view-all',
+      'dashboard-categories': 'dashboard-category-filter',
       'dashboard-accounts': 'dashboard-accounts-manage',
       'dashboard-total': 'dashboard-category-filter',
       'dashboard-source-filters': 'dashboard-category-accounts',
@@ -672,9 +725,40 @@ export default function App() {
       'dashboard-spending-ytd': 'dashboard-spending-expand',
     }
     const next = nextStep[tourStep]
-    if (tourStep === 'dashboard-merchants-view-all' || tourStep === 'dashboard-categories-view-all' || tourStep === 'dashboard-accounts-manage' || tourStep === 'dashboard-merchants-modal-close' || tourStep === 'dashboard-categories-modal-close' || tourStep === 'dashboard-accounts-modal-close' || tourStep === 'dashboard-category-filter' || tourStep === 'dashboard-spending-expand') return
-    if (tourStep === 'dashboard-self-made-filters') { document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-popover')?.scrollTo({ top: document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-popover')?.scrollHeight ?? 0, behavior: 'smooth' }); setTourStep('dashboard-source-filters'); return }
-    if (tourStep === 'dashboard-source-filters') { document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')?.click(); setTourStep('dashboard-category-accounts'); return }
+    if (tourStep === 'dashboard-category-filter') {
+      const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
+      if (trigger && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
+      setTourStep('dashboard-self-made-filters')
+      return
+    }
+    if (tourStep === 'dashboard-self-made-filters') {
+      const sourceGroup = document.querySelector<HTMLElement>('[data-tour="overview-source-filter-group"]')
+      if (sourceGroup) { setTourStep('dashboard-source-filters'); return }
+      const categoryTrigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
+      if (categoryTrigger?.getAttribute('aria-expanded') === 'true') categoryTrigger.click()
+      setTourStep('dashboard-category-accounts')
+      window.setTimeout(() => document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')?.click(), 0)
+      return
+    }
+    if (tourStep === 'dashboard-source-filters') {
+      const categoryTrigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
+      if (categoryTrigger?.getAttribute('aria-expanded') === 'true') categoryTrigger.click()
+      setTourStep('dashboard-category-accounts')
+      window.setTimeout(() => document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')?.click(), 0)
+      return
+    }
+    if (tourStep === 'dashboard-category-accounts') {
+      const accountTrigger = document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')
+      if (accountTrigger?.getAttribute('aria-expanded') === 'true') accountTrigger.click()
+      setTourStep('dashboard-category-card-breakdown')
+      return
+    }
+    if (tourStep === 'dashboard-category-card-breakdown') {
+      setActiveNav('Spending')
+      setTourStep('dashboard-spending-nav')
+      return
+    }
+    if (tourStep === 'dashboard-merchants-modal-close' || tourStep === 'dashboard-categories-modal-close' || tourStep === 'dashboard-accounts-modal-close' || tourStep === 'dashboard-spending-expand') return
     if (next) setTourStep(next)
     else if (tourStep === 'dashboard-total') skipDashboardTour()
   }
@@ -701,7 +785,7 @@ export default function App() {
       {showDataBanner && <div className={`data-banner ${importedStatements.length ? 'imported' : ''}`}><span>{importedStatements.length ? `${importedStatements.length} imported statement${importedStatements.length === 1 ? '' : 's'}` : 'No statements imported yet'}</span><button className="dismiss-banner" aria-label="Dismiss banner" onClick={() => setShowDataBanner(false)}><X size={15}/></button></div>}
       {!dataset.length ? <section className="empty-dashboard"><span className="upload-orb"><Upload size={24}/></span><h2>Your spending story starts here.</h2><p>Import your credit card or bank statements to see everything in one place.</p><button className="import-button" onClick={() => setView('import')}>Import statements</button></section> : <>{monthlyAnalyticsMonth ? <section className="overview-spending-chart overview-month-kpis"><div className="spending-flow-metrics overview-chart-kpis"><div data-tour="overview-total-spending"><small>Total spending</small><AnimatedMoney value={total}/></div><div className="overview-kpi-count"><small>Transactions</small><AnimatedNumber value={accountDataset.length} formatter={formatCount}/></div><div><small>Average transaction</small><AnimatedMoney value={spendingTransactions.length ? total / spendingTransactions.length : 0}/></div><div className="overview-kpi-count"><small>Active cards</small><AnimatedNumber value={new Set(accountDataset.map(t=>t.accountId).filter(id=>id!=='unassigned')).size} formatter={formatCount}/></div></div></section> : <section className="chart-card overview-spending-chart" data-tour="overview-spending-chart"><div className="overview-chart-controls"><div className="segmented">{['7D','30D','3M','6M','YTD','Custom'].map(p => <button key={p} onClick={() => selectChartPeriod(p)} className={period === p ? 'selected' : ''}>{p}</button>)}</div></div><div className="spending-flow-metrics overview-chart-kpis"><div data-tour="overview-total-spending"><small>Total spending</small><AnimatedMoney value={chartTotal}/></div><div className="overview-kpi-count"><small>Transactions</small><AnimatedNumber value={chartTransactions.length} formatter={formatCount}/></div><div><small>Average transaction</small><AnimatedMoney value={chartTransactions.length ? chartTotal / chartTransactions.length : 0}/></div><div className="overview-kpi-count"><small>Active cards</small><AnimatedNumber value={new Set(chartTransactions.map(t=>t.accountId).filter(id=>id!=='unassigned')).size} formatter={formatCount}/></div></div><div className="chart-wrap" ref={chartWrapRef}><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData} margin={{left: -25,right: 5,top: 10,bottom: 0}} onMouseMove={(state, event) => { const rect = chartWrapRef.current?.getBoundingClientRect(); const pointX = state.activeCoordinate?.x; if (!rect || typeof pointX !== 'number' || !state.isTooltipActive) { setChartTooltipVisible(false); return } setChartTooltipVisible(Math.abs(event.clientX - rect.left - pointX) <= 14) }} onMouseLeave={() => setChartTooltipVisible(false)} onClick={state => { const chartState = state as unknown as { activeTooltipIndex?: number | string; activeLabel?: string }; const index = typeof chartState.activeTooltipIndex === 'number' ? chartState.activeTooltipIndex : Number(chartState.activeTooltipIndex); const point = Number.isInteger(index) && index >= 0 ? chartData[index] : chartData.find(candidate => candidate.label === String(chartState.activeLabel)); if (point) setSelectedChartPoint(point) }}><defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#5763d7" stopOpacity=".2"/><stop offset="100%" stopColor="#5763d7" stopOpacity="0"/></linearGradient></defs><XAxis dataKey="label" interval="preserveStartEnd" axisLine={false} tickLine={false} tick={{fill:'#8e8d9d',fontSize:12}}/><Tooltip active={chartTooltipVisible} cursor={{stroke: '#cfd3fb', strokeWidth: 1, strokeDasharray: '3 4'}} content={<SpendingChartTooltip accountIds={chartAccountIds}/>} isAnimationActive={false}/><Area type="monotone" dataKey="amount" stroke="#5763d7" strokeWidth={2.5} fill="url(#fill)" dot={{r: 3, fill: '#5763d7', stroke: '#fff', strokeWidth: 2}} activeDot={{r: 5, fill: '#5763d7', stroke: '#fff', strokeWidth: 2}}/></AreaChart></ResponsiveContainer></div></section>}
       <div className="grid-two analytics-four-grid"><MonthlySpendingAnalytics panelsOnly month={monthlyAnalyticsMonth ?? ''} monthLabel={monthlyAnalyticsLabel} transactions={accountDataset} onMerchantClick={merchant => { setQuery(merchant); window.requestAnimationFrame(() => document.querySelector('.transactions')?.scrollIntoView({ behavior: 'smooth', block: 'start' })) }} onWeekdayClick={weekday => { setWeekdayFilter(current => current === weekday ? null : weekday); window.requestAnimationFrame(() => document.querySelector('.transactions')?.scrollIntoView({ behavior: 'smooth', block: 'start' })) }}/><section className="panel"><div className="section-head compact"><div><h2 className="dashboard-section-title">Categories</h2></div><button className="text-button" onClick={() => setShowCategoriesModal(true)}>View all</button></div><div className="category-list">{categoryTotals.slice(0,5).map(c => <button key={c.value} onClick={() => selectCategory(c.value)} className="category-row"><span className="category-dot" style={{background:c.color}}/><span className="category-name">{c.label}</span><span className="category-amount">{money.format(c.amount)}</span><span className="category-pct">{Math.round(c.amount/total*100)}%</span></button>)}</div></section><section className="panel"><div className="section-head compact"><div><h2 className="dashboard-section-title">Accounts</h2></div><button className="text-button" onClick={openManageModal}>Manage</button></div><div className="cards-list">{cards.slice(0,4).map(card => { const logo = cardLogoFor(card.institution); return <button key={card.id} className={`card-row ${account === card.id ? 'selected' : ''}`} aria-pressed={account === card.id} onClick={() => selectAccount(card.id)}><span className="mini-card" style={{background:logo ? '#fff' : card.color}}>{logo ? <img src={logo} alt={`${card.institution} logo`}/> : card.institution.slice(0,1)}</span><span><strong>{card.displayName}</strong><small>•••• {card.lastFour}</small></span><b>{money.format(card.amount)}</b></button>})}</div></section></div>
-      <section className="transactions panel"><div className="section-head"><div><h2 className="dashboard-section-title">Recent transactions</h2></div><button className="text-button">View all transactions</button></div><div className="transaction-total-row" aria-live="polite"><div className="transaction-total-label"><span className="eyebrow">TOTAL</span><span className="transaction-total-dots" aria-hidden="true">··</span></div><strong className={visibleTransactionTotal < 0 ? 'amount-negative' : 'amount-positive'}>{money.format(visibleTransactionTotal)}</strong></div><div className="filters"><label className="search-field"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search transactions"/></label><FilterDropdown icon={Filter} label="Category" value={category} wide options={categoryDropdownOptions} onChange={selectCategory}/><FilterDropdown icon={CreditCard} label="Account" value={account} options={[{ value: 'all', label: 'All Accounts' }, ...availableAccounts.map(a => ({ value: a.id, label: a.displayName }))]} onChange={selectAccount}/></div><div className="table"><div className="table-head"><span className="transaction-date-header"><span>Date</span><button className="transaction-date-sort" type="button" aria-label={transactionDateDescending ? 'Sort oldest transactions first' : 'Sort newest transactions first'} aria-pressed={!transactionDateDescending} onClick={() => setTransactionDateDescending(current => !current)}><ArrowDownUp size={14}/></button></span><span>Merchant</span><span className="category-header-cell">Category{showSourceSubcategoryMenu && <><button className="category-header-toggle" aria-label="Show category subcategories" aria-expanded={openCategoryMenu} onClick={event => { event.stopPropagation(); const rect = event.currentTarget.getBoundingClientRect(); const spaceBelow = window.innerHeight - rect.bottom; const spaceAbove = rect.top; setCategoryMenuPlacement(spaceBelow < 280 && spaceAbove > spaceBelow ? 'up' : 'down'); setOpenCategoryMenu(open => !open) }}><ChevronDown size={12}/></button>{openCategoryMenu && activeSourceCategoryGroup && <div className={`category-header-menu ${categoryMenuPlacement}`} onClick={event => event.stopPropagation()}><small className="category-menu-heading">{activeSourceCategoryGroup.parent}</small><button className="category-subcategory-option" onClick={() => { setSourceChildFilter(null); setOpenCategoryMenu(false) }}>All subcategories</button>{activeSourceCategoryGroup.children.map(child => <button className="category-subcategory-option" key={`${activeSourceCategoryGroup.key}-${child.key}`} onClick={() => { setSourceChildFilter({ parent: activeSourceCategoryGroup.key, child: child.key }); setOpenCategoryMenu(false) }}>{child.label}</button>)}</div>}</>}</span><span>Card</span><span>Amount</span></div>{filtered.map(t => { const a=accounts.find(a=>a.id===t.accountId); const c=categories.find(c=>c.id===t.categoryId)!; const sourceIsGrocery = /grocery|supermarket/i.test(t.sourceCategory ?? ''); const displayCategory = t.categoryId === 'groceries' && !sourceIsGrocery ? c.name : (t.sourceCategory ?? c.name); return <div className="table-row" key={t.id}><span>{t.transactionDate ? new Date(`${t.transactionDate}T12:00`).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : 'Needs review'}</span><strong>{t.merchantNormalized}<small>{t.description}</small></strong><span><i style={{background:c.color}}/> {displayCategory}</span><span>{a?.displayName ?? 'Unassigned'}<small>{a ? `•••• ${a.lastFour}` : 'Needs review'}</small></span><b className={t.amount < 0 ? 'amount-negative' : 'amount-positive'}>{money.format(t.amount)}</b></div>})}</div>{!filtered.length && <div className="empty"><CircleHelp size={20}/>No transactions match these filters.</div>}</section></>}
+      <section className="transactions panel"><div className="section-head"><div><h2 className="dashboard-section-title">Recent transactions</h2></div><button className="text-button">View all transactions</button></div><div className="transaction-total-row" aria-live="polite"><div className="transaction-total-label"><span className="eyebrow">TOTAL</span><span className="transaction-total-dots" aria-hidden="true">··</span></div><strong className={visibleTransactionTotal < 0 ? 'amount-negative' : 'amount-positive'}>{money.format(visibleTransactionTotal)}</strong></div><div className="filters"><label className="search-field"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder="Search transactions"/></label><FilterDropdown icon={Filter} label="Category" value={category} wide tourTarget="overview-category-filter" options={categoryDropdownOptions} onChange={selectCategory}/><FilterDropdown icon={CreditCard} label="Account" value={account} tourTarget="overview-account-filter" options={[{ value: 'all', label: 'All Accounts' }, ...availableAccounts.map(a => ({ value: a.id, label: a.displayName }))]} onChange={selectAccount}/></div><div className="table"><div className="table-head"><span className="transaction-date-header"><span>Date</span><button className="transaction-date-sort" type="button" aria-label={transactionDateDescending ? 'Sort oldest transactions first' : 'Sort newest transactions first'} aria-pressed={!transactionDateDescending} onClick={() => setTransactionDateDescending(current => !current)}><ArrowDownUp size={14}/></button></span><span>Merchant</span><span className="category-header-cell">Category{showSourceSubcategoryMenu && <><button className="category-header-toggle" aria-label="Show category subcategories" aria-expanded={openCategoryMenu} onClick={event => { event.stopPropagation(); const rect = event.currentTarget.getBoundingClientRect(); const spaceBelow = window.innerHeight - rect.bottom; const spaceAbove = rect.top; setCategoryMenuPlacement(spaceBelow < 280 && spaceAbove > spaceBelow ? 'up' : 'down'); setOpenCategoryMenu(open => !open) }}><ChevronDown size={12}/></button>{openCategoryMenu && activeSourceCategoryGroup && <div className={`category-header-menu ${categoryMenuPlacement}`} onClick={event => event.stopPropagation()}><small className="category-menu-heading">{activeSourceCategoryGroup.parent}</small><button className="category-subcategory-option" onClick={() => { setSourceChildFilter(null); setOpenCategoryMenu(false) }}>All subcategories</button>{activeSourceCategoryGroup.children.map(child => <button className="category-subcategory-option" key={`${activeSourceCategoryGroup.key}-${child.key}`} onClick={() => { setSourceChildFilter({ parent: activeSourceCategoryGroup.key, child: child.key }); setOpenCategoryMenu(false) }}>{child.label}</button>)}</div>}</>}</span><span>Card</span><span>Amount</span></div>{filtered.map(t => { const a=accounts.find(a=>a.id===t.accountId); const c=categories.find(c=>c.id===t.categoryId)!; const sourceIsGrocery = /grocery|supermarket/i.test(t.sourceCategory ?? ''); const displayCategory = t.categoryId === 'groceries' && !sourceIsGrocery ? c.name : (t.sourceCategory ?? c.name); return <div className="table-row" key={t.id}><span>{t.transactionDate ? new Date(`${t.transactionDate}T12:00`).toLocaleDateString('en-US',{month:'short',day:'numeric'}) : 'Needs review'}</span><strong>{t.merchantNormalized}<small>{t.description}</small></strong><span><i style={{background:c.color}}/> {displayCategory}</span><span>{a?.displayName ?? 'Unassigned'}<small>{a ? `•••• ${a.lastFour}` : 'Needs review'}</small></span><b className={t.amount < 0 ? 'amount-negative' : 'amount-positive'}>{money.format(t.amount)}</b></div>})}</div>{!filtered.length && <div className="empty"><CircleHelp size={20}/>No transactions match these filters.</div>}</section></>}
       {showCategoriesModal && <div className="modal-backdrop" role="presentation" onMouseDown={() => setShowCategoriesModal(false)}><section className="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="categories-modal-title" onMouseDown={event => event.stopPropagation()}><div className="dashboard-modal-header"><div><p className="eyebrow">CATEGORIES</p><h2 id="categories-modal-title">Where it went</h2><p>All spending categories in the current view.</p></div><button className="modal-close" aria-label="Close categories" onClick={() => setShowCategoriesModal(false)}><X size={18}/></button></div><div className="modal-category-list">{categoryTotals.length ? categoryTotals.map(c => <button key={c.value} className="modal-category-row" onClick={() => { selectCategory(c.value); setShowCategoriesModal(false) }}><span className="category-dot" style={{background:c.color}}/><span className="category-name">{c.label}</span><span className="category-amount">{money.format(c.amount)}</span><span className="category-pct">{Math.round(c.amount / total * 100)}%</span></button>) : <p className="modal-empty">No spending categories are available for this view.</p>}</div></section></div>}
       {showManageModal && <div className="modal-backdrop" role="presentation" onMouseDown={() => setShowManageModal(false)}><section className="dashboard-modal" role="dialog" aria-modal="true" aria-labelledby="manage-modal-title" onMouseDown={event => event.stopPropagation()}><div className="dashboard-modal-header"><div><p className="eyebrow">ACCOUNTS</p><h2 id="manage-modal-title">Manage cards</h2><p>Remove a card and its transactions from the current workspace.</p></div><button className="modal-close" aria-label="Close card management" onClick={() => setShowManageModal(false)}><X size={18}/></button></div><div className="modal-account-list">{availableAccounts.filter(card => !pendingDeletedAccounts.includes(card.id)).length ? availableAccounts.filter(card => !pendingDeletedAccounts.includes(card.id)).map(card => { const logo = cardLogoFor(card.institution); return <div className="modal-account-row" key={card.id}><span className="mini-card" style={{background:logo ? '#fff' : card.color}}>{logo ? <img src={logo} alt={`${card.institution} logo`}/> : card.institution.slice(0,1)}</span><span><strong>{card.displayName}</strong><small>{card.institution} · •••• {card.lastFour}</small></span><button className="modal-delete-button" onClick={() => stageAccountDelete(card.id)}>Delete</button></div> }) : <p className="modal-empty">No cards are available in this workspace.</p>}</div><div className="modal-actions"><button className="modal-save-button" onClick={saveAccountChanges} disabled={!pendingDeletedAccounts.length}>Save</button></div></section></div>}
       {namePromptOpen && !introSplashVisible && <div className="modal-backdrop name-prompt-backdrop" role="presentation"><section className="dashboard-modal name-prompt-modal" role="dialog" aria-modal="true" aria-labelledby="name-prompt-title" onMouseDown={event => event.stopPropagation()}><div className="dashboard-modal-header"><div><p className="eyebrow">WELCOME</p><h2 id="name-prompt-title">Hey, what’s your first name?</h2><p>We’ll use it to personalize your dashboard.</p></div></div><form className="name-prompt-form" onSubmit={event => { event.preventDefault(); const normalized = normalizeFirstName(userName); if (normalized) { setUserName(normalized); setNamePromptOpen(false); beginTourIfNeeded() } }}><label htmlFor="first-name">First name</label><input id="first-name" value={userName} onChange={event => setUserName(normalizeFirstName(event.target.value))} placeholder="Your first name" autoFocus/><button className="import-button" type="submit" disabled={!userName.trim()}>Continue</button></form></section></div>}

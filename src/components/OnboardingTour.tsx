@@ -122,14 +122,16 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     scroll: true,
   },
   'dashboard-self-made-filters': {
-    target: 'overview-category-filter-popover',
+    target: 'overview-self-made-filters',
     title: 'Self-made filters',
     body: 'Amazon, Groceries, Gas, and Paid are self-made filters created by Swagat Karki, the product owner, to make everyday finance reviews easier.',
+    scroll: true,
   },
   'dashboard-source-filters': {
-    target: 'overview-category-filter-popover',
+    target: 'overview-source-filter-group',
     title: 'Your personal card filters',
     body: 'Now these are your personal filters from your own credit card CSV files. Scroll through the list to see each card’s categories.',
+    scroll: true,
   },
   'dashboard-category-accounts': {
     target: 'overview-account-filter',
@@ -249,8 +251,8 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
   const focusRight = Math.min(window.innerWidth, targetRect.left + targetRect.width + 7)
   const focusBottom = Math.min(window.innerHeight, targetRect.top + targetRect.height + 7)
   const isDashboardStep = step.startsWith('dashboard-')
-  const showNext = (isDashboardStep && step !== 'dashboard-import') || (showImportNext && step === 'import-dropzone')
-  const showBack = !isDashboardStep && step !== 'dashboard-import' && Boolean(onBack)
+  const showNext = isDashboardStep || step === 'import-dropzone'
+  const showBack = step !== 'dashboard-import' && step !== 'dashboard-hide-numbers' && Boolean(onBack)
   return <div className="onboarding-tour" role="presentation">
     <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: 0, left: 0, right: 0, height: focusTop }}/>
     <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: focusTop, left: 0, width: focusLeft, height: focusBottom - focusTop }}/>
