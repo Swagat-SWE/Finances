@@ -65,9 +65,16 @@ function AnimatedNumber({ value, formatter, className, once = false }: { value: 
   const [displayed, setDisplayed] = useState(0)
   const displayedRef = useRef(0)
   const hasAnimatedRef = useRef(false)
+  const numbersHidden = areNumbersHidden()
 
   useEffect(() => {
     const target = Number.isFinite(value) ? value : 0
+    if (numbersHidden) {
+      displayedRef.current = 0
+      hasAnimatedRef.current = false
+      setDisplayed(0)
+      return
+    }
     if (once && hasAnimatedRef.current) {
       displayedRef.current = target
       setDisplayed(target)
@@ -106,7 +113,7 @@ function AnimatedNumber({ value, formatter, className, once = false }: { value: 
     }
     frame = requestAnimationFrame(tick)
     return () => cancelAnimationFrame(frame)
-  }, [value, once])
+  }, [value, once, numbersHidden])
 
   return <strong className={`animated-number ${className ?? ''}`}>{formatter(displayed)}</strong>
 }
