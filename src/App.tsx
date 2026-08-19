@@ -442,12 +442,13 @@ export default function App() {
       }
       if (tourStep === 'dashboard-spending-expand' && button.matches('.spending-flow-card-combined .spending-flow-expand')) { setTourStep('dashboard-spending-modal-close'); return }
       if (tourStep === 'dashboard-merchant-scatter-expand' && button.matches('.merchant-scatter-panel .merchant-expand-button')) { setTourStep('dashboard-merchant-scatter-dots'); return }
+      if (tourStep === 'dashboard-merchant-frequency' && button.matches('.merchant-frequency-panel .text-button')) { setTourStep('dashboard-merchant-frequency-modal-close'); return }
       if (button.matches('.modal-close')) {
         if (tourStep === 'dashboard-merchants-modal-close') setTourStep('dashboard-categories')
         else if (tourStep === 'dashboard-categories-modal-close') setTourStep('dashboard-accounts')
         else if (tourStep === 'dashboard-accounts-modal-close') setTourStep('dashboard-total')
         else if (tourStep === 'dashboard-merchant-detail-close') setTourStep('dashboard-merchant-scatter-modal-close')
-        else if (tourStep === 'dashboard-merchant-scatter-modal-close') setTourStep('dashboard-merchant-frequency-view-all')
+        else if (tourStep === 'dashboard-merchant-scatter-modal-close') setTourStep('dashboard-merchant-frequency')
         else if (tourStep === 'dashboard-merchant-frequency-modal-close') setTourStep('dashboard-merchant-directory')
       }
       if (tourStep === 'dashboard-spending-modal-close' && button.matches('.spending-flow-modal-close')) setTourStep('dashboard-categories-nav')
@@ -735,7 +736,8 @@ export default function App() {
       'dashboard-merchant-detail-spending': 'dashboard-merchant-scatter-dots',
       'dashboard-merchant-detail-close': 'dashboard-merchant-detail-spending',
       'dashboard-merchant-scatter-modal-close': 'dashboard-merchant-detail-close',
-      'dashboard-merchant-frequency-view-all': 'dashboard-merchant-scatter-modal-close',
+      'dashboard-merchant-frequency': 'dashboard-merchant-scatter-modal-close',
+      'dashboard-merchant-frequency-view-all': 'dashboard-merchant-frequency',
       'dashboard-merchant-frequency-modal-close': 'dashboard-merchant-frequency-view-all',
       'dashboard-merchant-directory': 'dashboard-merchant-frequency-modal-close',
     }
@@ -844,8 +846,12 @@ export default function App() {
     }
     if (tourStep === 'dashboard-merchant-scatter-modal-close') {
       const close = document.querySelector<HTMLElement>('.merchant-chart-modal .merchant-chart-modal-close')
-      if (close) { close.click(); window.requestAnimationFrame(() => setTourStep('dashboard-merchant-frequency-view-all')) }
-      else setTourStep('dashboard-merchant-frequency-view-all')
+      if (close) { close.click(); window.requestAnimationFrame(() => setTourStep('dashboard-merchant-frequency')) }
+      else setTourStep('dashboard-merchant-frequency')
+      return
+    }
+    if (tourStep === 'dashboard-merchant-frequency') {
+      setTourStep('dashboard-merchant-frequency-view-all')
       return
     }
     if (tourStep === 'dashboard-merchant-frequency-view-all') {
