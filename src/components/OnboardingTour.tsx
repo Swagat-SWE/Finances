@@ -5,6 +5,8 @@ export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import
 type Props = {
   step: TourStep
   onSkip: () => void
+  onBack?: () => void
+  onReplay?: () => void
 }
 
 const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; body: string }> = {
@@ -32,7 +34,7 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
 
 type Rect = { top: number; left: number; width: number; height: number }
 
-export default function OnboardingTour({ step, onSkip }: Props) {
+export default function OnboardingTour({ step, onSkip, onBack, onReplay }: Props) {
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [placeAbove, setPlaceAbove] = useState(false)
   const [popoverHeight, setPopoverHeight] = useState(190)
@@ -79,16 +81,26 @@ export default function OnboardingTour({ step, onSkip }: Props) {
   const targetCenter = targetRect.left + targetRect.width / 2
   const popoverLeft = Math.max(16, Math.min(window.innerWidth - popoverWidth - 16, targetCenter - popoverWidth / 2))
   const popoverTop = placeAbove ? targetRect.top - popoverHeight - 18 : targetRect.top + targetRect.height + 18
+  const focusTop = Math.max(0, targetRect.top - 7)
+  const focusLeft = Math.max(0, targetRect.left - 7)
+  const focusRight = Math.min(window.innerWidth, targetRect.left + targetRect.width + 7)
+  const focusBottom = Math.min(window.innerHeight, targetRect.top + targetRect.height + 7)
 
   return <div className="onboarding-tour" role="presentation">
-    <div className="onboarding-tour-scrim" aria-hidden="true"/>
+    <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: 0, left: 0, right: 0, height: focusTop }}/>
+    <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: focusTop, left: 0, width: focusLeft, height: focusBottom - focusTop }}/>
+    <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: focusTop, left: focusRight, right: 0, height: focusBottom - focusTop }}/>
+    <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: focusBottom, left: 0, right: 0, bottom: 0 }}/>
     <div className="onboarding-tour-focus" aria-hidden="true" style={{ top: targetRect.top - 7, left: targetRect.left - 7, width: targetRect.width + 14, height: targetRect.height + 14 }}/>
     <section className={`onboarding-tour-popover ${placeAbove ? 'above' : 'below'}`} role="dialog" aria-label="Quick tour" ref={element => { if (element) setPopoverHeight(element.offsetHeight) }} style={{ top: Math.max(16, popoverTop), left: popoverLeft, width: popoverWidth }}>
       <span className="onboarding-tour-arrow" aria-hidden="true"/>
       <p className="eyebrow">QUICK TOUR</p>
       <h2>{content.title}</h2>
       <p>{content.body}</p>
-      <button type="button" className="onboarding-tour-skip" onClick={onSkip}>Skip tour</button>
+      <div className="onboarding-tour-actions">
+        {step === 'import-dropzone' && onBack ? <button type="button" className="onboarding-tour-back" onClick={onBack}>Back</button> : <button type="button" className="onboarding-tour-skip" onClick={onSkip}>Skip tour</button>}
+        {step === 'import-dropzone' && onReplay && <button type="button" className="onboarding-tour-replay" onClick={onReplay}>Replay</button>}
+      </div>
     </section>
   </div>
 }

@@ -767,14 +767,16 @@ main{position:relative;z-index:1;min-height:100vh;background:#fff;border-radius:
 
 /* First-run guidance keeps the real controls usable while gently focusing the user's attention. */
 .onboarding-tour{position:fixed;inset:0;z-index:110;pointer-events:none}
-.onboarding-tour-scrim{position:absolute;inset:0;background:rgba(35,33,58,.16);backdrop-filter:blur(1.5px)}
+.onboarding-tour-scrim-panel{position:fixed;background:rgba(35,33,58,.16);backdrop-filter:blur(1.5px);pointer-events:none}
 .onboarding-tour-focus{position:fixed;z-index:1;border:2px solid #6672df;border-radius:12px;box-shadow:0 0 0 5px rgba(102,114,223,.17),0 8px 24px rgba(42,40,78,.14);pointer-events:none;animation:onboarding-focus-pulse 1.8s ease-in-out infinite}
 .onboarding-tour-popover{position:fixed;z-index:2;display:grid;gap:8px;padding:18px 19px 16px;border:1px solid #deddf0;border-radius:14px;background:#fff;box-shadow:0 18px 42px rgba(37,34,72,.22),0 3px 9px rgba(37,34,72,.08);color:#4b495a;pointer-events:auto}
 .onboarding-tour-popover .eyebrow{margin-bottom:0;color:#5965d6}
 .onboarding-tour-popover h2{font:700 17px 'Plus Jakarta Sans';letter-spacing:-.25px;color:#28263b}
 .onboarding-tour-popover>p:not(.eyebrow){font-size:12px;line-height:1.55;color:#777584;margin:0}
-.onboarding-tour-skip{justify-self:start;margin-top:3px;padding:7px 0;border:0;background:transparent;color:#5965d6;font:600 12px inherit;cursor:pointer}
-.onboarding-tour-skip:hover{text-decoration:underline;text-underline-offset:3px}
+.onboarding-tour-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:3px}
+.onboarding-tour-skip,.onboarding-tour-back,.onboarding-tour-replay{padding:7px 0;border:0;background:transparent;color:#5965d6;font:600 12px inherit;cursor:pointer}
+.onboarding-tour-skip:hover,.onboarding-tour-back:hover,.onboarding-tour-replay:hover{text-decoration:underline;text-underline-offset:3px}
+.onboarding-tour-replay{margin-left:auto}
 .onboarding-tour-arrow{position:absolute;width:13px;height:13px;background:#fff;border-left:1px solid #deddf0;border-top:1px solid #deddf0;transform:rotate(45deg);left:calc(50% - 7px);top:-7px}
 .onboarding-tour-popover.above .onboarding-tour-arrow{top:auto;bottom:-7px;transform:rotate(225deg)}
 @keyframes onboarding-focus-pulse{0%,100%{box-shadow:0 0 0 5px rgba(102,114,223,.14),0 8px 24px rgba(42,40,78,.12)}50%{box-shadow:0 0 0 9px rgba(102,114,223,.22),0 10px 28px rgba(42,40,78,.16)}}
