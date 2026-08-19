@@ -614,9 +614,10 @@ export default function App() {
   // The tour is intentionally session-scoped. A refresh starts a fresh visit,
   // so newcomers can see the guidance again while Skip still dismisses it for
   // the current page session.
-  const skipTour = () => setTourStep('idle')
+  const skipImportTour = () => setTourStep('idle')
+  const skipDashboardTour = () => setTourStep('idle')
   const beginTourIfNeeded = () => setTourStep('dashboard-import')
-  const finishTour = skipTour
+  const finishTour = skipImportTour
   const dashboardTourBack = () => {
     const previousStep: Partial<Record<TourStep, TourStep>> = {
       'dashboard-spending-chart': 'dashboard-total-spending',
@@ -642,7 +643,7 @@ export default function App() {
     }
     const next = nextStep[tourStep]
     if (next) setTourStep(next)
-    else if (tourStep === 'dashboard-total') skipTour()
+    else if (tourStep === 'dashboard-total') skipDashboardTour()
   }
   const deleteAccount = (accountId: string) => {
     const statementIds = new Set(importedTransactions.filter(transaction => transaction.accountId === accountId).map(transaction => transaction.statementId))
@@ -660,7 +661,7 @@ export default function App() {
       setDatePickerOpenRequest(request => request + 1)
     }
   }
-  if (view === 'import') return <><ImportFlow accounts={accounts} categories={categories} importedStatements={importedStatements} tourStep={tourStep} onTourStep={setTourStep} onTourSkip={skipTour} onTourFinish={finishTour} onTourBack={() => { setView('dashboard'); setTourStep('dashboard-import') }} onBack={() => setView('dashboard')} onComplete={finishImport}/></>
+  if (view === 'import') return <><ImportFlow accounts={accounts} categories={categories} importedStatements={importedStatements} tourStep={tourStep} onTourStep={setTourStep} onTourSkip={skipImportTour} onTourFinish={finishTour} onTourBack={() => { setView('dashboard'); setTourStep('dashboard-import') }} onBack={() => setView('dashboard')} onComplete={finishImport}/></>
   return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-is-collapsed' : ''}`}>
     <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}><div className="brand"><span className="brand-mark brand-logo"><img src={publicAsset('logo/Logo.png')} alt="Finances logo"/></span><span className="brand-name">Finances</span><button className="sidebar-toggle" type="button" aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-pressed={sidebarCollapsed} onClick={() => setSidebarCollapsed(current => !current)}>{sidebarCollapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</button></div><nav>{nav.map(item => <button key={item.label} title={sidebarCollapsed ? item.label : undefined} onClick={() => setActiveNav(item.label)} className={`nav-item ${activeNav === item.label ? 'active' : ''}`}><item.icon size={18}/><span>{item.label}</span></button>)}</nav><div className="sidebar-hide-numbers"><span className="sidebar-hide-numbers-label">Hide numbers</span><button data-tour="hide-numbers" type="button" className={`privacy-toggle ${hideNumbers ? 'on' : ''}`} role="switch" aria-checked={hideNumbers} aria-label={`${hideNumbers ? 'Disable' : 'Enable'} hiding financial amounts`} onClick={() => setHideNumbers(current => { const next = !current; setNumbersHidden(next); return next })}><span/></button></div></aside>
     <main>{activeNav === 'Categories' ? <CategoriesView transactions={accountDataset} availableAccounts={availableAccounts} dates={availableDates} months={availableMonths} mode={dateFilter} start={customStart} end={customEnd} openRequest={datePickerOpenRequest} onDateChange={(mode, start, end) => { setDateFilter(mode); if (mode === 'custom') { setCustomStart(start ?? ''); setCustomEnd(end ?? '') } else { setCustomStart(''); setCustomEnd('') } }} onImport={() => setView('import')}/> : activeNav === 'Spending' ? <SpendingView transactions={dataset} availableAccounts={availableAccounts}/> : activeNav === 'Merchants' ? <MerchantsView transactions={accountDataset.filter(transaction => categoryMatches(transaction, category))} availableAccounts={availableAccounts} dates={availableDates} months={availableMonths} mode={dateFilter} start={customStart} end={customEnd} openRequest={datePickerOpenRequest} onDateChange={(mode, start, end) => { setDateFilter(mode); if (mode === 'custom') { setCustomStart(start ?? ''); setCustomEnd(end ?? '') } else { setCustomStart(''); setCustomEnd('') } }} onImport={() => setView('import')}/> : activeNav === 'Statements' ? <StatementsView statements={importedStatements} transactions={dataset} accounts={accounts} categories={categories} onImport={() => setView('import')}/> : <><header><div><h1>Hello, {userName || 'there'}</h1><p className="subhead">A calm view of where your money is going.</p></div><div className="header-actions">{availableDates.length > 0 && <DateRangePicker dates={availableDates} months={availableMonths} mode={dateFilter} start={customStart} end={customEnd} openRequest={datePickerOpenRequest} onChange={(mode, start, end) => { setDateFilter(mode); if (mode === 'custom') { setCustomStart(start ?? ''); setCustomEnd(end ?? '') } else { setCustomStart(''); setCustomEnd('') } }}/>}<button className="import-button" data-tour="dashboard-import" onClick={() => { setView('import'); if (tourStep === 'dashboard-import') setTourStep('import-dropzone') }}><Upload size={17}/>Import statements</button></div></header>
@@ -675,7 +676,7 @@ export default function App() {
     </>}
     </main>
     {introSplashVisible && <div className="intro-splash" role="status" aria-live="polite"><div className="intro-splash-content"><h1 className="intro-splash-heading" aria-label="Let's make you aware of your finance">{"Let's make you aware of your finance".split(' ').map((word, wordIndex, words) => <span className="intro-splash-word" key={`${word}-${wordIndex}`} aria-hidden="true">{Array.from(word).map((character, index) => <span key={`${word}-${index}`} aria-hidden="true" style={{ animationDelay: `${(wordIndex * 8 + index) * 32}ms` }}>{character}</span>)}{wordIndex < words.length - 1 ? '\u00a0' : ''}</span>)}</h1><p className="intro-splash-signature" aria-label="Project by Swagat Karki">{"Project by Swagat Karki".split(' ').map((word, wordIndex, words) => <span className="intro-splash-word" key={`${word}-${wordIndex}`} aria-hidden="true">{Array.from(word).map((character, index) => <span key={`${word}-${index}`} aria-hidden="true" style={{ animationDelay: `${1.55 + (wordIndex * 8 + index) * 32 / 1000}s` }}>{character}</span>)}{wordIndex < words.length - 1 ? '\u00a0' : ''}</span>)}</p></div></div>}
-    <OnboardingTour step={tourStep} onSkip={skipTour} onNext={dashboardTourNext} onBack={dashboardTourBack}/>
+    <OnboardingTour step={tourStep} onSkip={skipDashboardTour} onNext={dashboardTourNext} onBack={dashboardTourBack}/>
   </div>
 }
 
