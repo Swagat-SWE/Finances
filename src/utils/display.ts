@@ -1,7 +1,10 @@
 const currency = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
 const hiddenCurrency = '$••••••'
 
-let numbersHidden = typeof window !== 'undefined' && window.localStorage.getItem('finances.hideNumbers') === 'true'
+// Financial amounts are private by default for every new login/page session.
+// The toggle still updates this in-memory value immediately, but we intentionally
+// do not persist an "unhidden" choice so a later login starts protected again.
+let numbersHidden = true
 
 export function areNumbersHidden() {
   return numbersHidden
@@ -9,7 +12,6 @@ export function areNumbersHidden() {
 
 export function setNumbersHidden(hidden: boolean) {
   numbersHidden = hidden
-  if (typeof window !== 'undefined') window.localStorage.setItem('finances.hideNumbers', String(hidden))
 }
 
 export function formatMoney(value: number) {
