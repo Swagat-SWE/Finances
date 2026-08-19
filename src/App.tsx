@@ -16,6 +16,12 @@ import { areNumbersHidden, formatMoney, setNumbersHidden } from './utils/display
 
 const money = { format: formatMoney }
 const nav = [{ icon: LayoutGrid, label: 'Overview', active: true }, { icon: TrendingUp, label: 'Spending' }, { icon: Tag, label: 'Categories' }, { icon: Search, label: 'Merchants' }, { icon: FileText, label: 'Statements' }]
+const introMoneyPieces = Array.from({ length: 30 }, (_, index) => ({
+  left: `${(index * 37) % 104 - 2}%`,
+  delay: `${(index % 13) * 0.13}s`,
+  duration: `${3.6 + (index % 6) * 0.34}s`,
+  tone: index % 4,
+}))
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 const cardLogoFor = (institution: string) => {
   const name = institution.toLocaleLowerCase()
@@ -1003,7 +1009,7 @@ export default function App() {
       {selectedChartPoint && <ChartPointDrawer point={selectedChartPoint} transactions={selectedChartTransactions} accountIds={chartAccountIds} onClose={() => setSelectedChartPoint(null)}/>} 
     </>}
     </main>
-    {introSplashVisible && <div className="intro-splash" role="status" aria-live="polite"><div className="intro-splash-content"><h1 className="intro-splash-heading" aria-label="Let's make you aware of your finance">{"Let's make you aware of your finance".split(' ').map((word, wordIndex, words) => <span className="intro-splash-word" key={`${word}-${wordIndex}`} aria-hidden="true">{Array.from(word).map((character, index) => <span key={`${word}-${index}`} aria-hidden="true" style={{ animationDelay: `${(wordIndex * 8 + index) * 32}ms` }}>{character}</span>)}{wordIndex < words.length - 1 ? '\u00a0' : ''}</span>)}</h1><p className="intro-splash-signature" aria-label="Project by Swagat Karki">{"Project by Swagat Karki".split(' ').map((word, wordIndex, words) => <span className="intro-splash-word" key={`${word}-${wordIndex}`} aria-hidden="true">{Array.from(word).map((character, index) => <span key={`${word}-${index}`} aria-hidden="true" style={{ animationDelay: `${1.55 + (wordIndex * 8 + index) * 32 / 1000}s` }}>{character}</span>)}{wordIndex < words.length - 1 ? '\u00a0' : ''}</span>)}</p></div></div>}
+    {introSplashVisible && <div className="intro-splash" role="status" aria-live="polite"><div className="intro-money-rain" aria-hidden="true">{introMoneyPieces.map((piece, index) => <span key={index} className={`intro-money-note tone-${piece.tone}`} style={{ left: piece.left, animationDelay: piece.delay, animationDuration: piece.duration }}>$</span>)}</div><div className="intro-splash-content"><h1 className="intro-splash-heading" aria-label="Let's make you aware of your finance">{"Let's make you aware of your finance".split(' ').map((word, wordIndex, words) => <span className="intro-splash-word" key={`${word}-${wordIndex}`} aria-hidden="true">{Array.from(word).map((character, index) => <span key={`${word}-${index}`} aria-hidden="true" style={{ animationDelay: `${(wordIndex * 8 + index) * 32}ms` }}>{character}</span>)}{wordIndex < words.length - 1 ? '\u00a0' : ''}</span>)}</h1><p className="intro-splash-signature" aria-label="Project by Swagat Karki">{"Project by Swagat Karki".split(' ').map((word, wordIndex, words) => <span className="intro-splash-word" key={`${word}-${wordIndex}`} aria-hidden="true">{Array.from(word).map((character, index) => <span key={`${word}-${index}`} aria-hidden="true" style={{ animationDelay: `${1.55 + (wordIndex * 8 + index) * 32 / 1000}s` }}>{character}</span>)}{wordIndex < words.length - 1 ? '\u00a0' : ''}</span>)}</p></div></div>}
     <OnboardingTour step={tourStep} onSkip={skipDashboardTour} onNext={dashboardTourNext} onBack={dashboardTourBack} onFinish={finishTour}/>
   </div>
 }

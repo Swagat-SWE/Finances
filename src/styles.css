@@ -753,7 +753,13 @@ main{position:relative;z-index:1;min-height:100vh;background:#fff;border-radius:
 .app-shell:has(.merchant-chart-modal-backdrop) .nav-item.active,
 .app-shell:has(.merchant-frequency-modal-backdrop) .nav-item.active{background:transparent;color:#777584;font-weight:500}
 .intro-splash{position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:#fff;color:#000;text-align:center}
-.intro-splash-content{width:min(100%,900px);padding:48px 24px}
+.intro-money-rain{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
+.intro-money-note{position:absolute;top:-38px;display:grid;place-items:center;width:30px;height:18px;border:1px solid rgba(20,103,67,.3);border-radius:4px;color:#fff;font:700 12px/1 'Plus Jakarta Sans';opacity:0;box-shadow:0 5px 12px rgba(33,111,76,.16);animation:intro-money-fall linear infinite;will-change:transform,opacity}
+.intro-money-note.tone-0{background:linear-gradient(135deg,#4caf7c,#26885e)}
+.intro-money-note.tone-1{background:linear-gradient(135deg,#62b987,#318b65)}
+.intro-money-note.tone-2{background:linear-gradient(135deg,#3e9f72,#1f7654)}
+.intro-money-note.tone-3{background:linear-gradient(135deg,#81c99d,#3d976e)}
+.intro-splash-content{position:relative;z-index:1;width:min(100%,900px);padding:48px 24px}
 .intro-splash-heading{margin:0;color:#000;font-family:'Playfair Display',serif;font-size:60px;font-weight:700;line-height:1.08;letter-spacing:.035em}
 .intro-splash-heading>.intro-splash-word{display:inline-block;white-space:nowrap}
 .intro-splash-heading>.intro-splash-word>span{display:inline-block;opacity:0;transform:translateY(14px);animation:intro-letter-reveal .7s cubic-bezier(.22,.8,.28,1) forwards}
@@ -778,8 +784,9 @@ main{position:relative;z-index:1;min-height:100vh;background:#fff;border-radius:
 .thank-you-completion .thank-you-signature{opacity:0;transform:translateY(10px);animation:thank-you-signature-reveal .7s .32s cubic-bezier(.22,.8,.28,1) forwards}
 @keyframes thank-you-line-reveal{to{opacity:1;transform:translateY(0)}}
 @keyframes intro-letter-reveal{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes intro-money-fall{0%{opacity:0;transform:translate3d(0,-10vh,0) rotate(-18deg)}12%{opacity:.78}52%{opacity:.72;transform:translate3d(18px,54vh,0) rotate(150deg)}100%{opacity:0;transform:translate3d(-14px,114vh,0) rotate(345deg)}}
 @keyframes thank-you-signature-reveal{to{opacity:1;transform:translateY(0)}}
-@media(prefers-reduced-motion:reduce){.thank-you-completion .thank-you-heading span,.thank-you-completion .thank-you-signature,.intro-splash-heading>.intro-splash-word>span,.intro-splash-signature{animation:none;opacity:1;transform:none}}
+@media(prefers-reduced-motion:reduce){.thank-you-completion .thank-you-heading span,.thank-you-completion .thank-you-signature,.intro-splash-heading>.intro-splash-word>span,.intro-splash-signature{animation:none;opacity:1;transform:none}.intro-money-note{animation:none;opacity:.2}}
 
 /* First-run guidance keeps the real controls usable while gently focusing the user's attention. */
 .onboarding-tour{position:fixed;inset:0;z-index:110;pointer-events:none}
