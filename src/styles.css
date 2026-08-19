@@ -670,6 +670,13 @@
 .brand-name{letter-spacing:.45px}
 .sidebar-toggle{display:grid;place-items:center;width:28px;height:28px;margin-left:auto;padding:0;border:1px solid #e4e3eb;border-radius:7px;background:#fff;color:#777584;cursor:pointer;transition:color .15s ease,background .15s ease,border-color .15s ease}
 .sidebar-toggle:hover,.sidebar-toggle:focus-visible{border-color:#c9cdf6;background:#f5f6ff;color:#515dd0;outline:0}
+.sidebar-hide-numbers{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-top:14px;padding:10px 11px;border-top:1px solid #e4e3e9;color:#777584;font-size:12px}
+.sidebar-hide-numbers-label{white-space:nowrap}
+.privacy-toggle{position:relative;flex:0 0 auto;width:34px;height:20px;padding:0;border:0;border-radius:999px;background:#d9d8e1;cursor:pointer;transition:background .18s ease}
+.privacy-toggle span{position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;box-shadow:0 1px 3px #25233a33;transition:transform .18s ease}
+.privacy-toggle.on{background:#515dd0}
+.privacy-toggle.on span{transform:translateX(14px)}
+.privacy-toggle:focus-visible{outline:2px solid #aab1ff;outline-offset:2px}
 .sidebar.collapsed{width:76px;padding-left:9px;padding-right:9px}
 .sidebar.collapsed .brand{justify-content:center;gap:2px;padding-left:0;padding-right:0}
 .sidebar.collapsed .brand-name,.sidebar.collapsed .nav-item span{display:none}
@@ -677,6 +684,8 @@
 .sidebar.collapsed .brand-logo{flex:0 0 42px}
 .sidebar.collapsed .sidebar-toggle{margin-left:0;width:25px;height:25px}
 .sidebar.collapsed .nav-item{justify-content:center;padding-left:11px;padding-right:11px}
+.sidebar.collapsed .sidebar-hide-numbers{justify-content:center;padding-left:0;padding-right:0}
+.sidebar.collapsed .sidebar-hide-numbers-label{display:none}
 .sidebar-is-collapsed main{width:calc(100% - 76px);margin-left:76px}
 @media(max-width:1050px){.sidebar-toggle{margin-left:0}.sidebar.collapsed{width:68px;padding-left:9px;padding-right:9px}.sidebar.collapsed .brand{gap:2px}.sidebar.collapsed .brand-mark{display:none}.sidebar-is-collapsed main{width:calc(100% - 68px);margin-left:68px}}
 @media(max-width:760px){.sidebar-is-collapsed main{width:100%;margin-left:0}}

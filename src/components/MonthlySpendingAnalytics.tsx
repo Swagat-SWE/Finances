@@ -2,8 +2,9 @@ import { useMemo, useState } from 'react'
 import { ArrowUpRight, BarChart3, Store, X } from 'lucide-react'
 import type { Transaction } from '../data/models'
 import { getSpendingByWeekday, getTopMerchants } from '../services/monthlyAnalytics'
+import { formatMoney } from '../utils/display'
 
-const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+const money = { format: formatMoney }
 
 type MonthlySpendingAnalyticsProps = {
   month: string

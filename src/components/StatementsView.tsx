@@ -4,8 +4,9 @@ import type { Account, Category, Statement, Transaction } from '../data/models'
 import { cardLogoFor } from '../utils/cardLogo'
 import { buildStatementRecords, expandStatementRecords, nextStatement, previousStatement, statementPeriodLabel, type StatementRecord } from '../services/statementAnalytics'
 import { spendingAmount } from '../services/statementImport'
+import { formatMoney } from '../utils/display'
 
-const money = new Intl.NumberFormat('en-US', { style: 'currency', currency: 'USD' })
+const money = { format: formatMoney }
 
 type Props = { statements: Statement[]; transactions: Transaction[]; accounts: Account[]; categories: Category[]; onImport: () => void }
 type ArchiveMode = 'month' | 'card'
