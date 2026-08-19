@@ -21,7 +21,16 @@ function MerchantScatterTooltip({ active, payload }: { active?: boolean; payload
 }
 
 function MerchantScatterPlot({ merchants, onSelect }: { merchants: MerchantAggregate[]; onSelect: (merchant: MerchantAggregate) => void }) {
-  return <ResponsiveContainer width="100%" height="100%"><ScatterChart margin={{ top: 12, right: 18, bottom: 18, left: 4 }}><CartesianGrid stroke="#efeff4" strokeDasharray="3 5"/><XAxis type="number" dataKey="x" name="Transactions" tick={{ fill: '#8e8d9d', fontSize: 10 }} allowDecimals={false} label={{ value: 'Transactions', position: 'insideBottom', offset: -10, fill: '#9997a4', fontSize: 10 }}/><YAxis type="number" dataKey="y" name="Spending" tick={{ fill: '#8e8d9d', fontSize: 10 }} tickFormatter={value => areNumbersHidden() ? '$••••••' : `$${Math.round(Number(value))}`} label={{ value: 'Spending', angle: -90, position: 'insideLeft', fill: '#9997a4', fontSize: 10 }}/><Tooltip content={<MerchantScatterTooltip/>}/><Scatter data={merchants.map(merchant => ({ ...merchant, x: merchant.transactionCount, y: merchant.total }))} fill="#5763d7" onClick={(point: unknown) => { const payload = typeof point === 'object' && point !== null ? point as { id?: unknown; payload?: { id?: unknown } } : {}; const merchantId = String(payload.id ?? payload.payload?.id ?? ''); const merchant = merchants.find(candidate => candidate.id === merchantId); if (merchant) onSelect(merchant) }}/></ScatterChart></ResponsiveContainer>
+  const handleSelect = (point: unknown) => {
+    const payload = typeof point === 'object' && point !== null ? point as { id?: unknown; payload?: { id?: unknown } } : {}
+    const merchantId = String(payload.id ?? payload.payload?.id ?? '')
+    const merchant = merchants.find(candidate => candidate.id === merchantId)
+    if (merchant) {
+      window.dispatchEvent(new CustomEvent('ledgerly-merchant-point'))
+      onSelect(merchant)
+    }
+  }
+  return <ResponsiveContainer width="100%" height="100%"><ScatterChart margin={{ top: 12, right: 18, bottom: 18, left: 4 }}><CartesianGrid stroke="#efeff4" strokeDasharray="3 5"/><XAxis type="number" dataKey="x" name="Transactions" tick={{ fill: '#8e8d9d', fontSize: 10 }} allowDecimals={false} label={{ value: 'Transactions', position: 'insideBottom', offset: -10, fill: '#9997a4', fontSize: 10 }}/><YAxis type="number" dataKey="y" name="Spending" tick={{ fill: '#8e8d9d', fontSize: 10 }} tickFormatter={value => areNumbersHidden() ? '$••••••' : `$${Math.round(Number(value))}`} label={{ value: 'Spending', angle: -90, position: 'insideLeft', fill: '#9997a4', fontSize: 10 }}/><Tooltip content={<MerchantScatterTooltip/>}/><Scatter data={merchants.map(merchant => ({ ...merchant, x: merchant.transactionCount, y: merchant.total }))} fill="#5763d7" onClick={handleSelect}/></ScatterChart></ResponsiveContainer>
 }
 
 function MerchantDetailDrawer({ merchant, accountId, accounts, onClose }: { merchant: MerchantAggregate; accountId?: string; accounts: Account[]; onClose: () => void }) {

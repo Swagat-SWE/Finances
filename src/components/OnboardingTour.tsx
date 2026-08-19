@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-category-accounts' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close'
+export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-category-accounts' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close' | 'dashboard-categories-nav' | 'dashboard-category-by-card' | 'dashboard-category-card-box' | 'dashboard-merchants-nav' | 'dashboard-merchant-by-card' | 'dashboard-merchant-scatter' | 'dashboard-merchant-scatter-expand' | 'dashboard-merchant-scatter-dots' | 'dashboard-merchant-detail-spending' | 'dashboard-merchant-detail-close' | 'dashboard-merchant-scatter-modal-close' | 'dashboard-merchant-frequency-view-all' | 'dashboard-merchant-frequency-modal-close' | 'dashboard-merchant-directory'
 
 type Props = {
   step: TourStep
@@ -183,6 +183,97 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     title: 'Close the expanded chart',
     body: 'Click the X to close the expanded chart and continue the tour.',
   },
+  'dashboard-categories-nav': {
+    target: 'categories-nav-item',
+    title: 'Explore categories',
+    body: 'Next, we’ll look at how your spending is organized by card and category.',
+    back: true,
+  },
+  'dashboard-category-by-card': {
+    target: 'category-by-card',
+    title: 'Category by card',
+    body: 'This view shows which card drives each category, so you can compare your spending across accounts.',
+    back: true,
+    scroll: true,
+  },
+  'dashboard-category-card-box': {
+    target: 'category-card-box',
+    title: 'Category breakdown',
+    body: 'Each card has its own category breakdown. Click a category row to open the matching transactions in the detail panel.',
+    back: true,
+    scroll: true,
+  },
+  'dashboard-merchants-nav': {
+    target: 'merchants-nav-item',
+    title: 'Explore merchants',
+    body: 'Next, we’ll see which merchants make up your spending.',
+    back: true,
+  },
+  'dashboard-merchant-by-card': {
+    target: 'merchant-by-card',
+    title: 'Merchant by Card',
+    body: 'Merchant by Card shows which cards you use at each merchant and how the spending is distributed.',
+    back: true,
+    scroll: true,
+  },
+  'dashboard-merchant-scatter': {
+    target: 'merchant-scatter',
+    title: 'Frequency vs spending',
+    body: 'Every dot represents a merchant. Hover over a dot to see its name and spending, then click it to open its transactions.',
+    back: true,
+    scroll: true,
+  },
+  'dashboard-merchant-scatter-expand': {
+    target: 'merchant-scatter-expand',
+    title: 'Expand the merchant chart',
+    body: 'Use Expand to open Frequency vs spending in a larger view.',
+    back: true,
+  },
+  'dashboard-merchant-scatter-dots': {
+    target: 'merchant-scatter-dots',
+    title: 'Explore every merchant dot',
+    body: 'Hover over any dot to see the merchant’s name, then click it to open that merchant’s transactions.',
+    back: true,
+  },
+  'dashboard-merchant-detail-spending': {
+    target: 'merchant-detail-spending',
+    title: 'Spending over time',
+    body: 'This detail chart shows how this merchant’s spending changed over time. Use Next to return to the chart controls.',
+    back: true,
+    scroll: true,
+  },
+  'dashboard-merchant-detail-close': {
+    target: 'merchant-detail-close',
+    title: 'Close merchant details',
+    body: 'Click Next to close this detail panel and return to the enlarged merchant chart.',
+    back: true,
+  },
+  'dashboard-merchant-scatter-modal-close': {
+    target: 'merchant-scatter-modal-close',
+    title: 'Close the enlarged chart',
+    body: 'Click Next to close the enlarged Frequency vs spending chart.',
+    back: true,
+  },
+  'dashboard-merchant-frequency-view-all': {
+    target: 'merchant-frequency-view-all',
+    title: 'See all frequent merchants',
+    body: 'View All opens the complete list of your most frequently visited merchants.',
+    back: true,
+    scroll: true,
+  },
+  'dashboard-merchant-frequency-modal-close': {
+    target: 'merchant-frequency-modal-close',
+    title: 'Close the merchant list',
+    body: 'Click Next to close the frequent-merchants list and continue to All Merchants.',
+    back: true,
+  },
+  'dashboard-merchant-directory': {
+    target: 'merchant-directory',
+    title: 'All Merchants',
+    body: 'This directory shows every merchant, how many cards you used there, and the average amount spent for each merchant.',
+    back: true,
+    scroll: true,
+  },
 }
 
 type Rect = { top: number; left: number; width: number; height: number }
@@ -204,6 +295,20 @@ const fallbackTargets: Record<string, () => HTMLElement | null> = {
   'spending-ytd': () => document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-total'),
   'spending-expand': () => document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-expand'),
   'spending-modal-close': () => document.querySelector<HTMLElement>('.spending-flow-modal-close'),
+  'categories-nav-item': () => Array.from(document.querySelectorAll<HTMLElement>('.nav-item')).find(item => item.textContent?.trim() === 'Categories') ?? null,
+  'category-by-card': () => document.querySelector<HTMLElement>('.categories-heatmap-card'),
+  'category-card-box': () => document.querySelector<HTMLElement>('.categories-card-grid .category-card-breakdown'),
+  'merchants-nav-item': () => Array.from(document.querySelectorAll<HTMLElement>('.nav-item')).find(item => item.textContent?.trim() === 'Merchants') ?? null,
+  'merchant-by-card': () => document.querySelector<HTMLElement>('.merchant-heatmap-panel'),
+  'merchant-scatter': () => document.querySelector<HTMLElement>('.merchant-scatter-panel'),
+  'merchant-scatter-expand': () => document.querySelector<HTMLElement>('.merchant-scatter-panel .merchant-expand-button'),
+  'merchant-scatter-dots': () => document.querySelector<HTMLElement>('.merchant-chart-modal .merchant-scatter-expanded'),
+  'merchant-detail-spending': () => Array.from(document.querySelectorAll<HTMLElement>('.merchant-detail-drawer .merchant-detail-section')).find(section => section.querySelector('h3')?.textContent?.trim() === 'Spending over time') ?? null,
+  'merchant-detail-close': () => document.querySelector<HTMLElement>('.merchant-detail-backdrop .modal-close'),
+  'merchant-scatter-modal-close': () => document.querySelector<HTMLElement>('.merchant-chart-modal .merchant-chart-modal-close'),
+  'merchant-frequency-view-all': () => document.querySelector<HTMLElement>('.merchant-frequency-panel .text-button'),
+  'merchant-frequency-modal-close': () => document.querySelector<HTMLElement>('.merchant-frequency-modal .modal-close'),
+  'merchant-directory': () => document.querySelector<HTMLElement>('.merchant-directory-panel'),
   'overview-spending-points': () => document.querySelector<HTMLElement>('.overview-spending-chart .chart-wrap') ?? document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-chart'),
   'spending-card-usage': () => document.querySelector<HTMLElement>('.chart-point-drawer-card-section'),
   'spending-card-transactions': () => document.querySelector<HTMLElement>('.chart-point-drawer-transactions-section'),

@@ -431,6 +431,8 @@ export default function App() {
       if (tourStep === 'dashboard-accounts-manage' && (button.matches('[data-tour="overview-accounts-manage"]') || (heading === 'Accounts' && buttonLabel === 'Manage'))) { setTourStep('dashboard-accounts-modal-close'); return }
       if (tourStep === 'dashboard-category-filter' && button.matches('.filters .filter-dropdown-wide .filter-dropdown-trigger')) { setTourStep('dashboard-self-made-filters'); return }
       if (tourStep === 'dashboard-spending-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Spending') { setTourStep('dashboard-spending'); return }
+      if (tourStep === 'dashboard-categories-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Categories') { setTourStep('dashboard-category-by-card'); return }
+      if (tourStep === 'dashboard-merchants-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Merchants') { setTourStep('dashboard-merchant-by-card'); return }
       if (tourStep === 'dashboard-spending-card-usage' && button.matches('.chart-point-drawer-card-section .merchant-detail-card-row')) { setTourStep('dashboard-spending-card-transactions'); return }
       if (tourStep === 'dashboard-self-made-filters' && button.closest('.filters .filter-dropdown-wide .filter-dropdown-popover')) {
         window.setTimeout(() => {
@@ -439,12 +441,16 @@ export default function App() {
         }, 0)
       }
       if (tourStep === 'dashboard-spending-expand' && button.matches('.spending-flow-card-combined .spending-flow-expand')) { setTourStep('dashboard-spending-modal-close'); return }
+      if (tourStep === 'dashboard-merchant-scatter-expand' && button.matches('.merchant-scatter-panel .merchant-expand-button')) { setTourStep('dashboard-merchant-scatter-dots'); return }
       if (button.matches('.modal-close')) {
         if (tourStep === 'dashboard-merchants-modal-close') setTourStep('dashboard-categories')
         else if (tourStep === 'dashboard-categories-modal-close') setTourStep('dashboard-accounts')
         else if (tourStep === 'dashboard-accounts-modal-close') setTourStep('dashboard-total')
+        else if (tourStep === 'dashboard-merchant-detail-close') setTourStep('dashboard-merchant-scatter-modal-close')
+        else if (tourStep === 'dashboard-merchant-scatter-modal-close') setTourStep('dashboard-merchant-frequency-view-all')
+        else if (tourStep === 'dashboard-merchant-frequency-modal-close') setTourStep('dashboard-merchant-directory')
       }
-      if (tourStep === 'dashboard-spending-modal-close' && button.matches('.spending-flow-modal-close')) setTourStep('idle')
+      if (tourStep === 'dashboard-spending-modal-close' && button.matches('.spending-flow-modal-close')) setTourStep('dashboard-categories-nav')
       if (tourStep === 'dashboard-spending-drawer-close' && button.matches('.chart-point-drawer .modal-close')) setTourStep(activeNav === 'Spending' ? 'dashboard-spending-ytd' : 'dashboard-weekday')
     }
     const handleSpendingPoint = (event: Event) => {
@@ -452,11 +458,17 @@ export default function App() {
       const hasMultipleCards = Boolean((event as CustomEvent<{ hasMultipleCards?: boolean }>).detail?.hasMultipleCards)
       window.requestAnimationFrame(() => setTourStep(hasMultipleCards ? 'dashboard-spending-card-usage' : 'dashboard-spending-drawer-close'))
     }
+    const handleMerchantPoint = () => {
+      if (tourStep !== 'dashboard-merchant-scatter-dots') return
+      window.requestAnimationFrame(() => setTourStep('dashboard-merchant-detail-spending'))
+    }
     document.addEventListener('click', handleTourAction)
     window.addEventListener('ledgerly-spending-point', handleSpendingPoint)
+    window.addEventListener('ledgerly-merchant-point', handleMerchantPoint)
     return () => {
       document.removeEventListener('click', handleTourAction)
       window.removeEventListener('ledgerly-spending-point', handleSpendingPoint)
+      window.removeEventListener('ledgerly-merchant-point', handleMerchantPoint)
     }
   }, [tourStep, activeNav])
   // Re-apply the current categorization rules to transactions already held in
@@ -712,6 +724,20 @@ export default function App() {
       'dashboard-spending': 'dashboard-spending-nav',
       'dashboard-spending-ytd': 'dashboard-spending',
       'dashboard-spending-expand': 'dashboard-spending-ytd',
+      'dashboard-categories-nav': 'dashboard-spending',
+      'dashboard-category-by-card': 'dashboard-categories-nav',
+      'dashboard-category-card-box': 'dashboard-category-by-card',
+      'dashboard-merchants-nav': 'dashboard-category-card-box',
+      'dashboard-merchant-by-card': 'dashboard-merchants-nav',
+      'dashboard-merchant-scatter': 'dashboard-merchant-by-card',
+      'dashboard-merchant-scatter-expand': 'dashboard-merchant-scatter',
+      'dashboard-merchant-scatter-dots': 'dashboard-merchant-scatter-expand',
+      'dashboard-merchant-detail-spending': 'dashboard-merchant-scatter-dots',
+      'dashboard-merchant-detail-close': 'dashboard-merchant-detail-spending',
+      'dashboard-merchant-scatter-modal-close': 'dashboard-merchant-detail-close',
+      'dashboard-merchant-frequency-view-all': 'dashboard-merchant-scatter-modal-close',
+      'dashboard-merchant-frequency-modal-close': 'dashboard-merchant-frequency-view-all',
+      'dashboard-merchant-directory': 'dashboard-merchant-frequency-modal-close',
     }
     const previous = previousStep[tourStep]
     if (previous) setTourStep(previous)
@@ -755,8 +781,8 @@ export default function App() {
     }
     if (tourStep === 'dashboard-spending-modal-close') {
       const close = document.querySelector<HTMLElement>('.spending-flow-modal-close')
-      if (close) { close.click(); skipDashboardTour() }
-      else skipDashboardTour()
+      if (close) { close.click(); window.requestAnimationFrame(() => setTourStep('dashboard-categories-nav')) }
+      else setTourStep('dashboard-categories-nav')
       return
     }
     if (tourStep === 'dashboard-spending-drawer-close') {
@@ -778,6 +804,59 @@ export default function App() {
       } else setTourStep('dashboard-spending-expand')
       return
     }
+    if (tourStep === 'dashboard-categories-nav') {
+      const categoriesNav = Array.from(document.querySelectorAll<HTMLElement>('.nav-item')).find(item => item.textContent?.trim() === 'Categories')
+      if (categoriesNav) {
+        categoriesNav.click()
+        window.requestAnimationFrame(() => setTourStep('dashboard-category-by-card'))
+      } else setTourStep('dashboard-category-by-card')
+      return
+    }
+    if (tourStep === 'dashboard-category-by-card') { setTourStep('dashboard-category-card-box'); return }
+    if (tourStep === 'dashboard-category-card-box') { setTourStep('dashboard-merchants-nav'); return }
+    if (tourStep === 'dashboard-merchants-nav') {
+      const merchantsNav = Array.from(document.querySelectorAll<HTMLElement>('.nav-item')).find(item => item.textContent?.trim() === 'Merchants')
+      if (merchantsNav) {
+        merchantsNav.click()
+        window.requestAnimationFrame(() => setTourStep('dashboard-merchant-by-card'))
+      } else setTourStep('dashboard-merchant-by-card')
+      return
+    }
+    if (tourStep === 'dashboard-merchant-by-card') { setTourStep('dashboard-merchant-scatter'); return }
+    if (tourStep === 'dashboard-merchant-scatter') { setTourStep('dashboard-merchant-scatter-expand'); return }
+    if (tourStep === 'dashboard-merchant-scatter-expand') {
+      const expand = document.querySelector<HTMLElement>('.merchant-scatter-panel .merchant-expand-button')
+      if (expand) { expand.click(); window.requestAnimationFrame(() => setTourStep('dashboard-merchant-scatter-dots')) }
+      else setTourStep('dashboard-merchant-scatter-dots')
+      return
+    }
+    if (tourStep === 'dashboard-merchant-scatter-dots') return
+    if (tourStep === 'dashboard-merchant-detail-spending') { setTourStep('dashboard-merchant-detail-close'); return }
+    if (tourStep === 'dashboard-merchant-detail-close') {
+      const close = document.querySelector<HTMLElement>('.merchant-detail-backdrop .modal-close')
+      if (close) { close.click(); window.requestAnimationFrame(() => setTourStep('dashboard-merchant-scatter-modal-close')) }
+      else setTourStep('dashboard-merchant-scatter-modal-close')
+      return
+    }
+    if (tourStep === 'dashboard-merchant-scatter-modal-close') {
+      const close = document.querySelector<HTMLElement>('.merchant-chart-modal .merchant-chart-modal-close')
+      if (close) { close.click(); window.requestAnimationFrame(() => setTourStep('dashboard-merchant-frequency-view-all')) }
+      else setTourStep('dashboard-merchant-frequency-view-all')
+      return
+    }
+    if (tourStep === 'dashboard-merchant-frequency-view-all') {
+      const viewAll = document.querySelector<HTMLElement>('.merchant-frequency-panel .text-button')
+      if (viewAll) { viewAll.click(); window.requestAnimationFrame(() => setTourStep('dashboard-merchant-frequency-modal-close')) }
+      else setTourStep('dashboard-merchant-frequency-modal-close')
+      return
+    }
+    if (tourStep === 'dashboard-merchant-frequency-modal-close') {
+      const close = document.querySelector<HTMLElement>('.merchant-frequency-modal .modal-close')
+      if (close) { close.click(); window.requestAnimationFrame(() => setTourStep('dashboard-merchant-directory')) }
+      else setTourStep('dashboard-merchant-directory')
+      return
+    }
+    if (tourStep === 'dashboard-merchant-directory') { skipDashboardTour(); return }
     const nextStep: Partial<Record<TourStep, TourStep>> = {
       'dashboard-hide-numbers': 'dashboard-total-spending',
       'dashboard-total-spending': 'dashboard-spending-chart',
