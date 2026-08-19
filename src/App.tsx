@@ -426,8 +426,8 @@ export default function App() {
       const heading = section?.querySelector('h2')?.textContent?.trim()
       const buttonLabel = button.textContent?.trim()
       if (tourStep === 'dashboard-merchants-view-all' && button.matches('.monthly-merchant-panel .monthly-panel-heading .text-button')) { setTourStep('dashboard-merchants-modal-close'); return }
-      if (tourStep === 'dashboard-categories-view-all' && heading === 'Categories' && buttonLabel === 'View all') { setTourStep('dashboard-categories-modal-close'); return }
-      if (tourStep === 'dashboard-accounts-manage' && heading === 'Accounts' && buttonLabel === 'Manage') { setTourStep('dashboard-accounts-modal-close'); return }
+      if (tourStep === 'dashboard-categories-view-all' && (button.matches('[data-tour="overview-categories-view-all"]') || (heading === 'Categories' && buttonLabel === 'View all'))) { setTourStep('dashboard-categories-modal-close'); return }
+      if (tourStep === 'dashboard-accounts-manage' && (button.matches('[data-tour="overview-accounts-manage"]') || (heading === 'Accounts' && buttonLabel === 'Manage'))) { setTourStep('dashboard-accounts-modal-close'); return }
       if (tourStep === 'dashboard-category-filter' && button.matches('.filters .filter-dropdown-wide .filter-dropdown-trigger')) { setTourStep('dashboard-self-made-filters'); return }
       if (tourStep === 'dashboard-spending-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Spending') { setTourStep('dashboard-spending'); return }
       if (tourStep === 'dashboard-spending-card-usage' && button.matches('.chart-point-drawer-card-section .merchant-detail-card-row')) { setTourStep('dashboard-spending-card-transactions'); return }
@@ -441,7 +441,7 @@ export default function App() {
       if (button.matches('.modal-close')) {
         if (tourStep === 'dashboard-merchants-modal-close') setTourStep('dashboard-categories')
         else if (tourStep === 'dashboard-categories-modal-close') setTourStep('dashboard-accounts')
-        else if (tourStep === 'dashboard-accounts-modal-close') setTourStep('dashboard-categories')
+        else if (tourStep === 'dashboard-accounts-modal-close') setTourStep('dashboard-total')
       }
       if (tourStep === 'dashboard-spending-modal-close' && button.matches('.spending-flow-modal-close')) setTourStep('idle')
       if (tourStep === 'dashboard-spending-drawer-close' && button.matches('.chart-point-drawer .modal-close')) setTourStep(activeNav === 'Spending' ? 'dashboard-spending-ytd' : 'dashboard-weekday')
@@ -706,14 +706,14 @@ export default function App() {
       return
     }
     if (tourStep === 'dashboard-categories-view-all') {
-      const section = Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(candidate => candidate.querySelector('h2')?.textContent?.trim() === 'Categories')
-      section?.querySelector<HTMLElement>('.text-button')?.click()
+      const categoriesViewAll = document.querySelector<HTMLElement>('[data-tour="overview-categories-view-all"]') ?? Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(candidate => candidate.querySelector('h2')?.textContent?.trim() === 'Categories')?.querySelector<HTMLElement>('.text-button')
+      categoriesViewAll?.click()
       setTourStep('dashboard-categories-modal-close')
       return
     }
     if (tourStep === 'dashboard-accounts-manage') {
-      const section = Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(candidate => candidate.querySelector('h2')?.textContent?.trim() === 'Accounts')
-      section?.querySelector<HTMLElement>('.text-button')?.click()
+      const accountsManage = document.querySelector<HTMLElement>('[data-tour="overview-accounts-manage"]') ?? Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(candidate => candidate.querySelector('h2')?.textContent?.trim() === 'Accounts')?.querySelector<HTMLElement>('.text-button')
+      accountsManage?.click()
       setTourStep('dashboard-accounts-modal-close')
       return
     }
@@ -731,8 +731,8 @@ export default function App() {
     }
     if (tourStep === 'dashboard-accounts-modal-close') {
       const close = document.querySelector<HTMLElement>('.modal-backdrop .dashboard-modal .modal-close')
-      if (close) { close.click(); setTourStep('dashboard-categories') }
-      else setTourStep('dashboard-categories')
+      if (close) { close.click(); setTourStep('dashboard-total') }
+      else setTourStep('dashboard-total')
       return
     }
     if (tourStep === 'dashboard-spending-modal-close') {
@@ -758,7 +758,7 @@ export default function App() {
       'dashboard-spending-chart': 'dashboard-spending-points',
       'dashboard-weekday': 'dashboard-merchants',
       'dashboard-merchants': 'dashboard-merchants-view-all',
-      'dashboard-categories': 'dashboard-self-made-filters',
+      'dashboard-categories': 'dashboard-categories-view-all',
       'dashboard-accounts': 'dashboard-accounts-manage',
       'dashboard-total': 'dashboard-category-filter',
       'dashboard-category-accounts': 'dashboard-spending-nav',
@@ -768,12 +768,6 @@ export default function App() {
     }
     const next = nextStep[tourStep]
     if (tourStep === 'dashboard-spending-points') return
-    if (tourStep === 'dashboard-categories') {
-      const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
-      if (trigger?.getAttribute('aria-expanded') !== 'true') trigger?.click()
-      setTourStep('dashboard-self-made-filters')
-      return
-    }
     if (tourStep === 'dashboard-category-filter') {
       const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
       if (trigger && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
@@ -783,7 +777,9 @@ export default function App() {
     if (tourStep === 'dashboard-self-made-filters') {
       const categoryTrigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
       if (categoryTrigger?.getAttribute('aria-expanded') === 'true') categoryTrigger.click()
-      setTourStep('dashboard-category-accounts')
+      // Let the dropdown finish closing before measuring the next target. This
+      // prevents the tour from appearing stuck while the popover is unmounting.
+      window.setTimeout(() => setTourStep('dashboard-category-accounts'), 0)
       return
     }
     if (tourStep === 'dashboard-category-accounts') {
