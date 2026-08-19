@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-categories' | 'dashboard-accounts' | 'dashboard-total'
+export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total'
 
 type Props = {
   step: TourStep
@@ -42,12 +42,12 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
   'dashboard-total-spending': {
     target: 'overview-total-spending',
     title: 'Total spending',
-    body: 'This is the total amount spent in your selected date range. Scroll down to keep exploring your dashboard.',
+    body: 'This is the total amount spent in your selected date range.',
   },
   'dashboard-spending-chart': {
     target: 'overview-spending-chart',
     title: 'Spending over time',
-    body: 'This graph shows your spending flow across the year, rising and falling as each month changes.',
+    body: 'This graph shows your spending flow across the year, rising and falling as each month changes. Hover over the graph to see the payments across all your cards during that particular month.',
     back: true,
   },
   'dashboard-weekday': {
@@ -64,6 +64,16 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     back: true,
     scroll: true,
   },
+  'dashboard-merchants-view-all': {
+    target: 'overview-top-merchants-view-all',
+    title: 'See every top merchant',
+    body: 'Click “View all” to see all of your top merchants.',
+  },
+  'dashboard-merchants-modal-close': {
+    target: 'overview-top-merchants-modal-close',
+    title: 'Return to your dashboard',
+    body: 'Click the X to close this view and continue the tour.',
+  },
   'dashboard-categories': {
     target: 'overview-categories',
     title: 'Categories',
@@ -71,12 +81,32 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     back: true,
     scroll: true,
   },
+  'dashboard-categories-view-all': {
+    target: 'overview-categories-view-all',
+    title: 'Explore every category',
+    body: 'Click “View all” to see all of your spending categories.',
+  },
+  'dashboard-categories-modal-close': {
+    target: 'overview-categories-modal-close',
+    title: 'Return to your dashboard',
+    body: 'Click the X to close this view and continue the tour.',
+  },
   'dashboard-accounts': {
     target: 'overview-accounts',
     title: 'Accounts',
     body: 'Accounts show which cards are carrying your spending and let you focus on one card at a time.',
     back: true,
     scroll: true,
+  },
+  'dashboard-accounts-manage': {
+    target: 'overview-accounts-manage',
+    title: 'Manage your cards',
+    body: 'Click Manage to delete or remove a card from your website.',
+  },
+  'dashboard-accounts-modal-close': {
+    target: 'overview-accounts-modal-close',
+    title: 'Return to your dashboard',
+    body: 'Click the X to close card management and continue the tour.',
   },
   'dashboard-total': {
     target: 'overview-transaction-total',
@@ -92,6 +122,12 @@ type Rect = { top: number; left: number; width: number; height: number }
 const fallbackTargets: Record<string, () => HTMLElement | null> = {
   'overview-categories': () => Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(section => section.querySelector('h2')?.textContent?.trim() === 'Categories') ?? null,
   'overview-accounts': () => Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(section => section.querySelector('h2')?.textContent?.trim() === 'Accounts') ?? null,
+  'overview-top-merchants-view-all': () => document.querySelector<HTMLElement>('.monthly-merchant-panel .monthly-panel-heading .text-button'),
+  'overview-categories-view-all': () => Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(section => section.querySelector('h2')?.textContent?.trim() === 'Categories')?.querySelector<HTMLElement>('.text-button') ?? null,
+  'overview-accounts-manage': () => Array.from(document.querySelectorAll<HTMLElement>('.analytics-four-grid > section')).find(section => section.querySelector('h2')?.textContent?.trim() === 'Accounts')?.querySelector<HTMLElement>('.text-button') ?? null,
+  'overview-top-merchants-modal-close': () => document.querySelector<HTMLElement>('.monthly-merchants-modal .modal-close'),
+  'overview-categories-modal-close': () => document.querySelector<HTMLElement>('.modal-backdrop .dashboard-modal .modal-close'),
+  'overview-accounts-modal-close': () => document.querySelector<HTMLElement>('.modal-backdrop .dashboard-modal .modal-close'),
 }
 
 export default function OnboardingTour({ step, onSkip, onNext, onBack, showImportNext = false }: Props) {

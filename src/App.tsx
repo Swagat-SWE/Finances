@@ -415,6 +415,26 @@ export default function App() {
     document.addEventListener('keydown', handleKeyDown)
     return () => document.removeEventListener('keydown', handleKeyDown)
   }, [selectedChartPoint])
+  useEffect(() => {
+    const handleTourAction = (event: MouseEvent) => {
+      const element = event.target instanceof Element ? event.target : null
+      const button = element?.closest('button')
+      if (!button) return
+      const section = button.closest<HTMLElement>('.analytics-four-grid > section')
+      const heading = section?.querySelector('h2')?.textContent?.trim()
+      const buttonLabel = button.textContent?.trim()
+      if (tourStep === 'dashboard-merchants-view-all' && button.matches('.monthly-merchant-panel .monthly-panel-heading .text-button')) { setTourStep('dashboard-merchants-modal-close'); return }
+      if (tourStep === 'dashboard-categories-view-all' && heading === 'Categories' && buttonLabel === 'View all') { setTourStep('dashboard-categories-modal-close'); return }
+      if (tourStep === 'dashboard-accounts-manage' && heading === 'Accounts' && buttonLabel === 'Manage') { setTourStep('dashboard-accounts-modal-close'); return }
+      if (button.matches('.modal-close')) {
+        if (tourStep === 'dashboard-merchants-modal-close') setTourStep('dashboard-categories')
+        else if (tourStep === 'dashboard-categories-modal-close') setTourStep('dashboard-accounts')
+        else if (tourStep === 'dashboard-accounts-modal-close') setTourStep('dashboard-total')
+      }
+    }
+    document.addEventListener('click', handleTourAction)
+    return () => document.removeEventListener('click', handleTourAction)
+  }, [tourStep])
   // Re-apply the current categorization rules to transactions already held in
   // the browser. Imports are kept in state as a snapshot, so a rule update
   // (for example, recognizing WALMART.COM or TARGET STORE as groceries) would
@@ -637,11 +657,12 @@ export default function App() {
       'dashboard-total-spending': 'dashboard-spending-chart',
       'dashboard-spending-chart': 'dashboard-weekday',
       'dashboard-weekday': 'dashboard-merchants',
-      'dashboard-merchants': 'dashboard-categories',
-      'dashboard-categories': 'dashboard-accounts',
-      'dashboard-accounts': 'dashboard-total',
+      'dashboard-merchants': 'dashboard-merchants-view-all',
+      'dashboard-categories': 'dashboard-categories-view-all',
+      'dashboard-accounts': 'dashboard-accounts-manage',
     }
     const next = nextStep[tourStep]
+    if (tourStep === 'dashboard-merchants-view-all' || tourStep === 'dashboard-categories-view-all' || tourStep === 'dashboard-accounts-manage' || tourStep === 'dashboard-merchants-modal-close' || tourStep === 'dashboard-categories-modal-close' || tourStep === 'dashboard-accounts-modal-close') return
     if (next) setTourStep(next)
     else if (tourStep === 'dashboard-total') skipDashboardTour()
   }
