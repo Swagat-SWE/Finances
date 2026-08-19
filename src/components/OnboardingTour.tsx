@@ -353,15 +353,40 @@ const fallbackTargets: Record<string, () => HTMLElement | null> = {
   'spending-drawer-close': () => document.querySelector<HTMLElement>('.chart-point-drawer .modal-close'),
 }
 
+const confettiColors = ['#5965d6', '#f4b740', '#ef6f91', '#49b7a5', '#8d7ce8', '#f28b55']
+const confettiPieces = Array.from({ length: 52 }, (_, index) => ({
+  left: `${(index * 37) % 101}%`,
+  color: confettiColors[index % confettiColors.length],
+  width: `${6 + (index % 4) * 2}px`,
+  height: `${9 + (index % 5) * 2}px`,
+  delay: `${(index % 14) * 0.12}s`,
+  duration: `${3.4 + (index % 7) * 0.28}s`,
+  rotation: `${(index * 31) % 180 - 90}deg`,
+}))
+
+function TourCompletion({ onBack, onFinish }: { onBack?: () => void; onFinish: () => void }) {
+  return <div className="onboarding-tour onboarding-tour-completion" role="presentation">
+    <div className="tour-confetti-layer" aria-hidden="true">{confettiPieces.map((piece, index) => <span className="tour-confetti-piece" key={index} style={{ left: piece.left, background: piece.color, width: piece.width, height: piece.height, animationDelay: piece.delay, animationDuration: piece.duration, rotate: piece.rotation }}/>)}</div>
+    <section className="onboarding-tour-completion-modal" role="dialog" aria-modal="true" aria-labelledby="tour-completion-title">
+      <p className="eyebrow">QUICK TOUR</p>
+      <h2 id="tour-completion-title">Tour Completed</h2>
+      <p>The tour is officially done. The owner, Swagat Karki, hopes you would benefit from this website.</p>
+      <p>It took him about <strong>103</strong> hours to make this website.</p>
+      <div className="onboarding-tour-completion-actions"><button type="button" className="onboarding-tour-back" onClick={onBack}>Back</button><button type="button" className="onboarding-tour-finish" onClick={onFinish}>Finish</button></div>
+    </section>
+  </div>
+}
+
 export default function OnboardingTour({ step, onSkip, onNext, onBack, showImportNext = false }: Props) {
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [placeAbove, setPlaceAbove] = useState(false)
   const [popoverHeight, setPopoverHeight] = useState(190)
   const scrolledStepRef = useRef<TourStep | null>(null)
   const content = step === 'idle' ? null : copy[step]
+  const isCompletionStep = step === 'dashboard-tour-complete'
 
   const measure = () => {
-    if (!content) {
+    if (!content || isCompletionStep) {
       setTargetRect(null)
       return
     }
@@ -414,7 +439,7 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
     // briefly until the real target exists instead of positioning a phantom.
     const retry = window.setInterval(measure, 120)
     return () => window.clearInterval(retry)
-  }, [step, popoverHeight])
+  }, [step, popoverHeight, isCompletionStep])
 
   useEffect(() => {
     if (!content) return
@@ -427,7 +452,9 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
     }
   }, [step, popoverHeight])
 
-  if (!content || !targetRect) return null
+  if (!content) return null
+  if (isCompletionStep) return <TourCompletion onBack={onBack} onFinish={onNext}/>
+  if (!targetRect) return null
 
   const popoverWidth = Math.min(360, window.innerWidth - 32)
   const targetCenter = targetRect.left + targetRect.width / 2
