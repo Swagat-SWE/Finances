@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-source-filters' | 'dashboard-category-accounts' | 'dashboard-category-card-breakdown' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close'
+export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-category-accounts' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close'
 
 type Props = {
   step: TourStep
@@ -118,7 +118,7 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
   'dashboard-accounts': {
     target: 'overview-accounts',
     title: 'Accounts',
-    body: 'Accounts show which cards are carrying your spending and let you focus on one card at a time.',
+    body: 'These cards show which accounts are carrying your spending. Click any card to see the dashboard data and graph change for that account, or use Manage to continue.',
     back: true,
     scroll: true,
   },
@@ -151,22 +151,10 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     body: 'Amazon, Groceries, Gas, and Paid are self-made filters created by Swagat Karki, the product owner, to make everyday finance reviews easier.',
     scroll: true,
   },
-  'dashboard-source-filters': {
-    target: 'overview-source-filter-group',
-    title: 'Your personal card filters',
-    body: 'Now these are your personal filters from your own credit card CSV files. Scroll through the list to see each card’s categories.',
-    scroll: true,
-  },
   'dashboard-category-accounts': {
     target: 'overview-account-filter',
     title: 'All Accounts',
     body: 'All Accounts brings every card’s categories together. Choose one account to focus the category list on that card.',
-    scroll: true,
-  },
-  'dashboard-category-card-breakdown': {
-    target: 'overview-accounts',
-    title: 'Categories change with the card',
-    body: 'Choose one of these cards to see only its categories. Choose All Accounts to bring every card’s categories back.',
     scroll: true,
   },
   'dashboard-spending-nav': {
@@ -177,7 +165,7 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
   'dashboard-spending': {
     target: 'spending-view',
     title: 'Your spending flows',
-    body: 'Compare each card’s spending flow and the combined view to understand how your usage changes over time.',
+    body: 'Start with the All Cards graph to compare how your cards carry spending over time. Next, we’ll show you how to explore each point.',
     scroll: true,
   },
   'dashboard-spending-ytd': {
@@ -216,7 +204,7 @@ const fallbackTargets: Record<string, () => HTMLElement | null> = {
   'spending-ytd': () => document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-total'),
   'spending-expand': () => document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-expand'),
   'spending-modal-close': () => document.querySelector<HTMLElement>('.spending-flow-modal-close'),
-  'overview-spending-points': () => document.querySelector<HTMLElement>('.overview-spending-chart .chart-wrap'),
+  'overview-spending-points': () => document.querySelector<HTMLElement>('.overview-spending-chart .chart-wrap') ?? document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-chart'),
   'spending-card-usage': () => document.querySelector<HTMLElement>('.chart-point-drawer-card-section'),
   'spending-card-transactions': () => document.querySelector<HTMLElement>('.chart-point-drawer-transactions-section'),
   'spending-drawer-close': () => document.querySelector<HTMLElement>('.chart-point-drawer .modal-close'),
@@ -248,7 +236,7 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
     // use their combined bounds so the tour focus spans every point while
     // still leaving the chart itself clickable.
     if (content.target === 'overview-spending-points') {
-      const dots = Array.from(document.querySelectorAll<SVGElement>('.overview-spending-chart .recharts-dot, .overview-spending-chart .recharts-area-dot'))
+      const dots = Array.from(document.querySelectorAll<SVGElement>('.overview-spending-chart .recharts-dot, .overview-spending-chart .recharts-area-dot, .spending-flow-card-combined .recharts-dot, .spending-flow-card-combined .recharts-area-dot'))
       if (dots.length) {
         const bounds = dots.reduce((acc, dot) => {
           const dotRect = dot.getBoundingClientRect()

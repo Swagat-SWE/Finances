@@ -60,8 +60,6 @@ export default function FilterDropdown({ label, value, options, onChange, wide =
     else groups.push({ name: option.group, items: [option] })
     return groups
   }, [])
-  const firstSourceGroupIndex = groupedOptions.findIndex(group => Boolean(group.name) && group.name !== 'CREDIT CARD FILTERS' && group.name !== 'SELF-MADE FILTERS')
-
   const toggle = () => {
     if (open) {
       setOpen(false)
@@ -80,8 +78,7 @@ export default function FilterDropdown({ label, value, options, onChange, wide =
     {open && <div className={`filter-dropdown-popover ${placement}`} role="listbox" aria-label={label}>
       {groupedOptions.map((group, groupIndex) => {
         const isSelfMade = group.name === 'SELF-MADE FILTERS'
-        const isSourceGroup = Boolean(group.name) && group.name !== 'CREDIT CARD FILTERS' && !isSelfMade
-        const groupTourTarget = isSelfMade ? 'overview-self-made-filters' : (isSourceGroup && groupIndex === firstSourceGroupIndex ? 'overview-source-filter-group' : undefined)
+        const groupTourTarget = isSelfMade ? 'overview-self-made-filters' : undefined
         return <div className="filter-dropdown-group" data-tour={groupTourTarget} key={`${group.name ?? 'ungrouped'}-${groupIndex}`}>
           {group.name && <div className={`filter-dropdown-group-label ${groupIndex > 0 ? 'with-divider' : ''}`} role="presentation">{group.name}</div>}
           {group.items.map(option => <button key={option.value} ref={node => { optionRefs.current[option.value] = node }} role="option" aria-selected={option.value === value} className={option.value === value ? 'active' : ''} onClick={() => choose(option.value)}><span>{option.label}</span>{option.value === value && <Check size={14}/>}</button>)}

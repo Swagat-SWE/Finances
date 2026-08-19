@@ -419,7 +419,7 @@ export default function App() {
     const handleTourAction = (event: MouseEvent) => {
       const element = event.target instanceof Element ? event.target : null
       if (!element) return
-      if (tourStep === 'dashboard-spending-points' && element.closest('.overview-spending-chart .recharts-dot, .overview-spending-chart .recharts-area-dot')) { setTourStep('dashboard-spending-card-usage'); return }
+      if (tourStep === 'dashboard-spending-points' && element.closest('.overview-spending-chart .recharts-dot, .overview-spending-chart .recharts-area-dot, .spending-flow-card-combined .recharts-dot, .spending-flow-card-combined .recharts-area-dot')) { setTourStep('dashboard-spending-card-usage'); return }
       const button = element.closest('button')
       if (!button) return
       const section = button.closest<HTMLElement>('.analytics-four-grid > section')
@@ -431,15 +431,9 @@ export default function App() {
       if (tourStep === 'dashboard-category-filter' && button.matches('.filters .filter-dropdown-wide .filter-dropdown-trigger')) { setTourStep('dashboard-self-made-filters'); return }
       if (tourStep === 'dashboard-spending-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Spending') { setTourStep('dashboard-spending'); return }
       if (tourStep === 'dashboard-spending-card-usage' && button.matches('.chart-point-drawer-card-section .merchant-detail-card-row')) { setTourStep('dashboard-spending-card-transactions'); return }
-      if ((tourStep === 'dashboard-self-made-filters' || tourStep === 'dashboard-source-filters') && button.closest('.filters .filter-dropdown-wide .filter-dropdown-popover')) {
+      if (tourStep === 'dashboard-self-made-filters' && button.closest('.filters .filter-dropdown-wide .filter-dropdown-popover')) {
         window.setTimeout(() => {
           const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
-          if (trigger?.getAttribute('aria-expanded') !== 'true') trigger?.click()
-        }, 0)
-      }
-      if (tourStep === 'dashboard-category-accounts' && button.closest('.filters .filter-dropdown:not(.filter-dropdown-wide) .filter-dropdown-popover')) {
-        window.setTimeout(() => {
-          const trigger = document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')
           if (trigger?.getAttribute('aria-expanded') !== 'true') trigger?.click()
         }, 0)
       }
@@ -447,14 +441,14 @@ export default function App() {
       if (button.matches('.modal-close')) {
         if (tourStep === 'dashboard-merchants-modal-close') setTourStep('dashboard-categories')
         else if (tourStep === 'dashboard-categories-modal-close') setTourStep('dashboard-accounts')
-        else if (tourStep === 'dashboard-accounts-modal-close') setTourStep('dashboard-total')
+        else if (tourStep === 'dashboard-accounts-modal-close') setTourStep('dashboard-categories')
       }
       if (tourStep === 'dashboard-spending-modal-close' && button.matches('.spending-flow-modal-close')) setTourStep('idle')
-      if (tourStep === 'dashboard-spending-drawer-close' && button.matches('.chart-point-drawer .modal-close')) setTourStep('dashboard-weekday')
+      if (tourStep === 'dashboard-spending-drawer-close' && button.matches('.chart-point-drawer .modal-close')) setTourStep(activeNav === 'Spending' ? 'dashboard-spending-ytd' : 'dashboard-weekday')
     }
     document.addEventListener('click', handleTourAction)
     return () => document.removeEventListener('click', handleTourAction)
-  }, [tourStep])
+  }, [tourStep, activeNav])
   // Re-apply the current categorization rules to transactions already held in
   // the browser. Imports are kept in state as a snapshot, so a rule update
   // (for example, recognizing WALMART.COM or TARGET STORE as groceries) would
@@ -666,31 +660,37 @@ export default function App() {
     } else if (tourStep === 'dashboard-spending-drawer-close') {
       document.querySelector<HTMLElement>('.chart-point-drawer-transactions-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
     }
-    if (['dashboard-self-made-filters', 'dashboard-source-filters', 'dashboard-category-accounts'].includes(tourStep)) {
+    if (tourStep === 'dashboard-self-made-filters') {
       const categoryTrigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
-      const accountTrigger = document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')
       if (categoryTrigger?.getAttribute('aria-expanded') === 'true') categoryTrigger.click()
+    }
+    if (tourStep === 'dashboard-category-accounts') {
+      const accountTrigger = document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')
       if (accountTrigger?.getAttribute('aria-expanded') === 'true') accountTrigger.click()
     }
     const previousStep: Partial<Record<TourStep, TourStep>> = {
       'dashboard-hide-numbers': 'dashboard-import',
       'dashboard-total-spending': 'dashboard-hide-numbers',
       'dashboard-spending-chart': 'dashboard-total-spending',
-      'dashboard-spending-points': 'dashboard-spending-chart',
+      'dashboard-spending-points': activeNav === 'Spending' ? 'dashboard-spending' : 'dashboard-spending-chart',
       'dashboard-spending-card-usage': 'dashboard-spending-points',
       'dashboard-spending-card-transactions': 'dashboard-spending-card-usage',
       'dashboard-spending-drawer-close': 'dashboard-spending-card-transactions',
       'dashboard-weekday': 'dashboard-spending-chart',
       'dashboard-merchants': 'dashboard-weekday',
+      'dashboard-merchants-view-all': 'dashboard-merchants',
+      'dashboard-merchants-modal-close': 'dashboard-merchants-view-all',
       'dashboard-categories': 'dashboard-merchants',
+      'dashboard-categories-view-all': 'dashboard-categories',
+      'dashboard-categories-modal-close': 'dashboard-categories-view-all',
       'dashboard-accounts': 'dashboard-categories',
+      'dashboard-accounts-manage': 'dashboard-accounts',
+      'dashboard-accounts-modal-close': 'dashboard-accounts-manage',
       'dashboard-total': 'dashboard-accounts',
       'dashboard-category-filter': 'dashboard-total',
       'dashboard-self-made-filters': 'dashboard-categories',
-      'dashboard-source-filters': 'dashboard-self-made-filters',
-      'dashboard-category-accounts': 'dashboard-source-filters',
-      'dashboard-category-card-breakdown': 'dashboard-category-accounts',
-      'dashboard-spending-nav': 'dashboard-category-card-breakdown',
+      'dashboard-category-accounts': 'dashboard-self-made-filters',
+      'dashboard-spending-nav': 'dashboard-category-accounts',
       'dashboard-spending': 'dashboard-spending-nav',
       'dashboard-spending-ytd': 'dashboard-spending',
       'dashboard-spending-expand': 'dashboard-spending-ytd',
@@ -717,6 +717,36 @@ export default function App() {
       setTourStep('dashboard-accounts-modal-close')
       return
     }
+    if (tourStep === 'dashboard-merchants-modal-close') {
+      const close = document.querySelector<HTMLElement>('.monthly-merchants-modal .modal-close')
+      if (close) { close.click(); setTourStep('dashboard-categories') }
+      else setTourStep('dashboard-categories')
+      return
+    }
+    if (tourStep === 'dashboard-categories-modal-close') {
+      const close = document.querySelector<HTMLElement>('.modal-backdrop .dashboard-modal .modal-close')
+      if (close) { close.click(); setTourStep('dashboard-accounts') }
+      else setTourStep('dashboard-accounts')
+      return
+    }
+    if (tourStep === 'dashboard-accounts-modal-close') {
+      const close = document.querySelector<HTMLElement>('.modal-backdrop .dashboard-modal .modal-close')
+      if (close) { close.click(); setTourStep('dashboard-categories') }
+      else setTourStep('dashboard-categories')
+      return
+    }
+    if (tourStep === 'dashboard-spending-modal-close') {
+      const close = document.querySelector<HTMLElement>('.spending-flow-modal-close')
+      if (close) { close.click(); skipDashboardTour() }
+      else skipDashboardTour()
+      return
+    }
+    if (tourStep === 'dashboard-spending-drawer-close') {
+      const close = document.querySelector<HTMLElement>('.chart-point-drawer .modal-close')
+      if (close) { close.click(); setTourStep(activeNav === 'Spending' ? 'dashboard-spending-ytd' : 'dashboard-weekday') }
+      else setTourStep(activeNav === 'Spending' ? 'dashboard-spending-ytd' : 'dashboard-weekday')
+      return
+    }
     if (tourStep === 'dashboard-spending-card-usage' || tourStep === 'dashboard-spending-card-transactions') {
       document.querySelector<HTMLElement>('.chart-point-drawer')?.scrollTo({ top: 0, behavior: 'smooth' })
       setTourStep('dashboard-spending-drawer-close')
@@ -728,18 +758,22 @@ export default function App() {
       'dashboard-spending-chart': 'dashboard-spending-points',
       'dashboard-weekday': 'dashboard-merchants',
       'dashboard-merchants': 'dashboard-merchants-view-all',
-      'dashboard-categories': 'dashboard-categories-view-all',
+      'dashboard-categories': 'dashboard-self-made-filters',
       'dashboard-accounts': 'dashboard-accounts-manage',
       'dashboard-total': 'dashboard-category-filter',
-      'dashboard-source-filters': 'dashboard-category-accounts',
-      'dashboard-category-accounts': 'dashboard-category-card-breakdown',
-      'dashboard-category-card-breakdown': 'dashboard-spending-nav',
+      'dashboard-category-accounts': 'dashboard-spending-nav',
       'dashboard-spending-nav': 'dashboard-spending',
-      'dashboard-spending': 'dashboard-spending-ytd',
+      'dashboard-spending': 'dashboard-spending-points',
       'dashboard-spending-ytd': 'dashboard-spending-expand',
     }
     const next = nextStep[tourStep]
     if (tourStep === 'dashboard-spending-points') return
+    if (tourStep === 'dashboard-categories') {
+      const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
+      if (trigger?.getAttribute('aria-expanded') !== 'true') trigger?.click()
+      setTourStep('dashboard-self-made-filters')
+      return
+    }
     if (tourStep === 'dashboard-category-filter') {
       const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
       if (trigger && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
@@ -747,33 +781,23 @@ export default function App() {
       return
     }
     if (tourStep === 'dashboard-self-made-filters') {
-      const sourceGroup = document.querySelector<HTMLElement>('[data-tour="overview-source-filter-group"]')
-      if (sourceGroup) { setTourStep('dashboard-source-filters'); return }
       const categoryTrigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
       if (categoryTrigger?.getAttribute('aria-expanded') === 'true') categoryTrigger.click()
       setTourStep('dashboard-category-accounts')
-      window.setTimeout(() => document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')?.click(), 0)
-      return
-    }
-    if (tourStep === 'dashboard-source-filters') {
-      const categoryTrigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
-      if (categoryTrigger?.getAttribute('aria-expanded') === 'true') categoryTrigger.click()
-      setTourStep('dashboard-category-accounts')
-      window.setTimeout(() => document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')?.click(), 0)
       return
     }
     if (tourStep === 'dashboard-category-accounts') {
       const accountTrigger = document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')
       if (accountTrigger?.getAttribute('aria-expanded') === 'true') accountTrigger.click()
-      setTourStep('dashboard-category-card-breakdown')
-      return
-    }
-    if (tourStep === 'dashboard-category-card-breakdown') {
-      setActiveNav('Spending')
       setTourStep('dashboard-spending-nav')
       return
     }
-    if (tourStep === 'dashboard-merchants-modal-close' || tourStep === 'dashboard-categories-modal-close' || tourStep === 'dashboard-accounts-modal-close' || tourStep === 'dashboard-spending-expand') return
+    if (tourStep === 'dashboard-spending-nav') {
+      const spendingButton = document.querySelector<HTMLElement>('[data-tour="spending-nav-item"]') ?? Array.from(document.querySelectorAll<HTMLElement>('.nav-item')).find(item => item.textContent?.trim() === 'Spending')
+      if (spendingButton) spendingButton.click()
+      else { setActiveNav('Spending'); setTourStep('dashboard-spending') }
+      return
+    }
     if (next) setTourStep(next)
     else if (tourStep === 'dashboard-total') skipDashboardTour()
   }
@@ -795,7 +819,7 @@ export default function App() {
   }
   if (view === 'import') return <><ImportFlow accounts={accounts} categories={categories} importedStatements={importedStatements} tourStep={tourStep} onTourStep={setTourStep} onTourSkip={skipImportTour} onTourFinish={finishTour} onTourBack={() => { setView('dashboard'); setTourStep('dashboard-import') }} onBack={() => setView('dashboard')} onComplete={finishImport}/></>
   return <div className={`app-shell ${sidebarCollapsed ? 'sidebar-is-collapsed' : ''}`}>
-    <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}><div className="brand"><span className="brand-mark brand-logo"><img src={publicAsset('logo/Logo.png')} alt="Finances logo"/></span><span className="brand-name">Finances</span><button className="sidebar-toggle" type="button" aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-pressed={sidebarCollapsed} onClick={() => setSidebarCollapsed(current => !current)}>{sidebarCollapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</button></div><nav>{nav.map(item => <button key={item.label} title={sidebarCollapsed ? item.label : undefined} onClick={() => setActiveNav(item.label)} className={`nav-item ${activeNav === item.label ? 'active' : ''}`}><item.icon size={18}/><span>{item.label}</span></button>)}</nav><div className="sidebar-hide-numbers"><span className="sidebar-hide-numbers-label">Hide numbers</span><button data-tour="hide-numbers" type="button" className={`privacy-toggle ${hideNumbers ? 'on' : ''}`} role="switch" aria-checked={hideNumbers} aria-label={`${hideNumbers ? 'Disable' : 'Enable'} hiding financial amounts`} onClick={() => setHideNumbers(current => { const next = !current; setNumbersHidden(next); return next })}><span/></button></div></aside>
+    <aside className={`sidebar ${sidebarCollapsed ? 'collapsed' : ''}`}><div className="brand"><span className="brand-mark brand-logo"><img src={publicAsset('logo/Logo.png')} alt="Finances logo"/></span><span className="brand-name">Finances</span><button className="sidebar-toggle" type="button" aria-label={sidebarCollapsed ? 'Expand sidebar' : 'Collapse sidebar'} aria-pressed={sidebarCollapsed} onClick={() => setSidebarCollapsed(current => !current)}>{sidebarCollapsed ? <PanelLeftOpen size={17}/> : <PanelLeftClose size={17}/>}</button></div><nav>{nav.map(item => <button key={item.label} data-tour={item.label === 'Spending' ? 'spending-nav-item' : undefined} title={sidebarCollapsed ? item.label : undefined} onClick={() => setActiveNav(item.label)} className={`nav-item ${activeNav === item.label ? 'active' : ''}`}><item.icon size={18}/><span>{item.label}</span></button>)}</nav><div className="sidebar-hide-numbers"><span className="sidebar-hide-numbers-label">Hide numbers</span><button data-tour="hide-numbers" type="button" className={`privacy-toggle ${hideNumbers ? 'on' : ''}`} role="switch" aria-checked={hideNumbers} aria-label={`${hideNumbers ? 'Disable' : 'Enable'} hiding financial amounts`} onClick={() => setHideNumbers(current => { const next = !current; setNumbersHidden(next); return next })}><span/></button></div></aside>
     <main>{activeNav === 'Categories' ? <CategoriesView transactions={accountDataset} availableAccounts={availableAccounts} dates={availableDates} months={availableMonths} mode={dateFilter} start={customStart} end={customEnd} openRequest={datePickerOpenRequest} onDateChange={(mode, start, end) => { setDateFilter(mode); if (mode === 'custom') { setCustomStart(start ?? ''); setCustomEnd(end ?? '') } else { setCustomStart(''); setCustomEnd('') } }} onImport={() => setView('import')}/> : activeNav === 'Spending' ? <SpendingView transactions={dataset} availableAccounts={availableAccounts}/> : activeNav === 'Merchants' ? <MerchantsView transactions={accountDataset.filter(transaction => categoryMatches(transaction, category))} availableAccounts={availableAccounts} dates={availableDates} months={availableMonths} mode={dateFilter} start={customStart} end={customEnd} openRequest={datePickerOpenRequest} onDateChange={(mode, start, end) => { setDateFilter(mode); if (mode === 'custom') { setCustomStart(start ?? ''); setCustomEnd(end ?? '') } else { setCustomStart(''); setCustomEnd('') } }} onImport={() => setView('import')}/> : activeNav === 'Statements' ? <StatementsView statements={importedStatements} transactions={dataset} accounts={accounts} categories={categories} onImport={() => setView('import')}/> : <><header><div><h1>Hello, {userName || 'there'}</h1><p className="subhead">A calm view of where your money is going.</p></div><div className="header-actions">{availableDates.length > 0 && <DateRangePicker dates={availableDates} months={availableMonths} mode={dateFilter} start={customStart} end={customEnd} openRequest={datePickerOpenRequest} onChange={(mode, start, end) => { setDateFilter(mode); if (mode === 'custom') { setCustomStart(start ?? ''); setCustomEnd(end ?? '') } else { setCustomStart(''); setCustomEnd('') } }}/>}<button className="import-button" data-tour="dashboard-import" onClick={() => { setView('import'); if (tourStep === 'dashboard-import') setTourStep('import-dropzone') }}><Upload size={17}/>Import statements</button></div></header>
       {showDataBanner && <div className={`data-banner ${importedStatements.length ? 'imported' : ''}`}><span>{importedStatements.length ? `${importedStatements.length} imported statement${importedStatements.length === 1 ? '' : 's'}` : 'No statements imported yet'}</span><button className="dismiss-banner" aria-label="Dismiss banner" onClick={() => setShowDataBanner(false)}><X size={15}/></button></div>}
       {!dataset.length ? <section className="empty-dashboard"><span className="upload-orb"><Upload size={24}/></span><h2>Your spending story starts here.</h2><p>Import your credit card or bank statements to see everything in one place.</p><button className="import-button" onClick={() => setView('import')}>Import statements</button></section> : <>{monthlyAnalyticsMonth ? <section className="overview-spending-chart overview-month-kpis"><div className="spending-flow-metrics overview-chart-kpis"><div data-tour="overview-total-spending"><small>Total spending</small><AnimatedMoney value={total}/></div><div className="overview-kpi-count"><small>Transactions</small><AnimatedNumber value={accountDataset.length} formatter={formatCount}/></div><div><small>Average transaction</small><AnimatedMoney value={spendingTransactions.length ? total / spendingTransactions.length : 0}/></div><div className="overview-kpi-count"><small>Active cards</small><AnimatedNumber value={new Set(accountDataset.map(t=>t.accountId).filter(id=>id!=='unassigned')).size} formatter={formatCount}/></div></div></section> : <section className="chart-card overview-spending-chart" data-tour="overview-spending-chart"><div className="overview-chart-controls"><div className="segmented">{['7D','30D','3M','6M','YTD','Custom'].map(p => <button key={p} onClick={() => selectChartPeriod(p)} className={period === p ? 'selected' : ''}>{p}</button>)}</div></div><div className="spending-flow-metrics overview-chart-kpis"><div data-tour="overview-total-spending"><small>Total spending</small><AnimatedMoney value={chartTotal}/></div><div className="overview-kpi-count"><small>Transactions</small><AnimatedNumber value={chartTransactions.length} formatter={formatCount}/></div><div><small>Average transaction</small><AnimatedMoney value={chartTransactions.length ? chartTotal / chartTransactions.length : 0}/></div><div className="overview-kpi-count"><small>Active cards</small><AnimatedNumber value={new Set(chartTransactions.map(t=>t.accountId).filter(id=>id!=='unassigned')).size} formatter={formatCount}/></div></div><div className="chart-wrap" ref={chartWrapRef}><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData} margin={{left: -25,right: 5,top: 10,bottom: 0}} onMouseMove={(state, event) => { const rect = chartWrapRef.current?.getBoundingClientRect(); const pointX = state.activeCoordinate?.x; if (!rect || typeof pointX !== 'number' || !state.isTooltipActive) { setChartTooltipVisible(false); return } setChartTooltipVisible(Math.abs(event.clientX - rect.left - pointX) <= 14) }} onMouseLeave={() => setChartTooltipVisible(false)} onClick={state => { const chartState = state as unknown as { activeTooltipIndex?: number | string; activeLabel?: string }; const index = typeof chartState.activeTooltipIndex === 'number' ? chartState.activeTooltipIndex : Number(chartState.activeTooltipIndex); const point = Number.isInteger(index) && index >= 0 ? chartData[index] : chartData.find(candidate => candidate.label === String(chartState.activeLabel)); if (point) setSelectedChartPoint(point) }}><defs><linearGradient id="fill" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stopColor="#5763d7" stopOpacity=".2"/><stop offset="100%" stopColor="#5763d7" stopOpacity="0"/></linearGradient></defs><XAxis dataKey="label" interval="preserveStartEnd" axisLine={false} tickLine={false} tick={{fill:'#8e8d9d',fontSize:12}}/><Tooltip active={chartTooltipVisible} cursor={{stroke: '#cfd3fb', strokeWidth: 1, strokeDasharray: '3 4'}} content={<SpendingChartTooltip accountIds={chartAccountIds}/>} isAnimationActive={false}/><Area type="monotone" dataKey="amount" stroke="#5763d7" strokeWidth={2.5} fill="url(#fill)" dot={{r: 3, fill: '#5763d7', stroke: '#fff', strokeWidth: 2}} activeDot={{r: 5, fill: '#5763d7', stroke: '#fff', strokeWidth: 2}}/></AreaChart></ResponsiveContainer></div></section>}
