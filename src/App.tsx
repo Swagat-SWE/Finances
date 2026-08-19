@@ -419,7 +419,13 @@ export default function App() {
     const handleTourAction = (event: MouseEvent) => {
       const element = event.target instanceof Element ? event.target : null
       if (!element) return
-      if (tourStep === 'dashboard-spending-points' && element.closest('.overview-spending-chart .recharts-dot, .overview-spending-chart .recharts-area-dot, .spending-flow-card-combined .recharts-dot, .spending-flow-card-combined .recharts-area-dot')) { setTourStep('dashboard-spending-card-usage'); return }
+      if (tourStep === 'dashboard-spending-points' && element.closest('.overview-spending-chart .recharts-dot, .overview-spending-chart .recharts-area-dot, .spending-flow-card .recharts-dot, .spending-flow-card .recharts-area-dot')) {
+        // The drawer is mounted by the chart click handler in the same event
+        // turn. Wait one frame so we can distinguish the multi-card Card usage
+        // section from a single-card drawer before positioning the tour.
+        window.setTimeout(() => setTourStep(document.querySelector('.chart-point-drawer-card-section') ? 'dashboard-spending-card-usage' : 'dashboard-spending-drawer-close'), 0)
+        return
+      }
       const button = element.closest('button')
       if (!button) return
       const section = button.closest<HTMLElement>('.analytics-four-grid > section')
@@ -776,10 +782,11 @@ export default function App() {
     }
     if (tourStep === 'dashboard-self-made-filters') {
       const categoryTrigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
-      if (categoryTrigger?.getAttribute('aria-expanded') === 'true') categoryTrigger.click()
-      // Let the dropdown finish closing before measuring the next target. This
-      // prevents the tour from appearing stuck while the popover is unmounting.
-      window.setTimeout(() => setTourStep('dashboard-category-accounts'), 0)
+      const advance = () => setTourStep('dashboard-category-accounts')
+      if (categoryTrigger?.getAttribute('aria-expanded') === 'true') {
+        categoryTrigger.click()
+        window.requestAnimationFrame(advance)
+      } else advance()
       return
     }
     if (tourStep === 'dashboard-category-accounts') {

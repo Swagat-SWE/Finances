@@ -59,7 +59,7 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
   'dashboard-spending-card-usage': {
     target: 'spending-card-usage',
     title: 'Cards used',
-    body: 'Every card here is interactive. Click a card to scroll to the exact transactions that make up its total.',
+    body: 'Just like in Overview, every card here is interactive. Click a card to scroll to the exact transactions that make up its total, then use the X to return to the chart tour.',
     back: true,
   },
   'dashboard-spending-card-transactions': {
