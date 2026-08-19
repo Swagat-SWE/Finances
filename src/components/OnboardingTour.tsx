@@ -1,12 +1,13 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-category-accounts' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close' | 'dashboard-categories-nav' | 'dashboard-category-by-card' | 'dashboard-category-card-box' | 'dashboard-merchants-nav' | 'dashboard-merchant-by-card' | 'dashboard-merchant-scatter' | 'dashboard-merchant-scatter-expand' | 'dashboard-merchant-scatter-dots' | 'dashboard-merchant-detail-spending' | 'dashboard-merchant-detail-close' | 'dashboard-merchant-scatter-modal-close' | 'dashboard-merchant-frequency' | 'dashboard-merchant-frequency-view-all' | 'dashboard-merchant-frequency-modal-close' | 'dashboard-merchant-directory' | 'dashboard-statements-nav' | 'dashboard-statements-coverage' | 'dashboard-statements-view-toggle' | 'dashboard-tour-complete'
+export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'import-tour-skipped' | 'dashboard-import-skipped' | 'dashboard-tour-skipped' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-category-accounts' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close' | 'dashboard-categories-nav' | 'dashboard-category-by-card' | 'dashboard-category-card-box' | 'dashboard-merchants-nav' | 'dashboard-merchant-by-card' | 'dashboard-merchant-scatter' | 'dashboard-merchant-scatter-expand' | 'dashboard-merchant-scatter-dots' | 'dashboard-merchant-detail-spending' | 'dashboard-merchant-detail-close' | 'dashboard-merchant-scatter-modal-close' | 'dashboard-merchant-frequency' | 'dashboard-merchant-frequency-view-all' | 'dashboard-merchant-frequency-modal-close' | 'dashboard-merchant-directory' | 'dashboard-statements-nav' | 'dashboard-statements-coverage' | 'dashboard-statements-view-toggle' | 'dashboard-tour-complete'
 
 type Props = {
   step: TourStep
   onSkip: () => void
   onNext: () => void
   onBack?: () => void
+  onFinish?: () => void
   showImportNext?: boolean
 }
 
@@ -33,6 +34,21 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     title: 'Your dashboard is ready',
     body: 'Click here to begin the project and explore your finances.',
     back: true,
+  },
+  'import-tour-skipped': {
+    target: 'import-tour-links',
+    title: 'Tour paused',
+    body: 'You can restart the full website tour anytime by selecting Tour of entire website.',
+  },
+  'dashboard-import-skipped': {
+    target: 'sidebar-tour-links',
+    title: 'Tour paused',
+    body: 'You can restart the full website tour anytime by selecting Tour of entire website.',
+  },
+  'dashboard-tour-skipped': {
+    target: 'sidebar-tour-links',
+    title: 'Tour paused',
+    body: 'Choose Tour of current page to revisit this section, or Tour of entire website to explore the complete experience.',
   },
   'dashboard-hide-numbers': {
     target: 'hide-numbers',
@@ -377,7 +393,7 @@ function TourCompletion({ onBack, onFinish }: { onBack?: () => void; onFinish: (
   </div>
 }
 
-export default function OnboardingTour({ step, onSkip, onNext, onBack, showImportNext = false }: Props) {
+export default function OnboardingTour({ step, onSkip, onNext, onBack, onFinish, showImportNext = false }: Props) {
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [placeAbove, setPlaceAbove] = useState(false)
   const [popoverHeight, setPopoverHeight] = useState(190)
@@ -453,7 +469,7 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
   }, [step, popoverHeight])
 
   if (!content) return null
-  if (isCompletionStep) return <TourCompletion onBack={onBack} onFinish={onNext}/>
+  if (isCompletionStep) return <TourCompletion onBack={onBack} onFinish={onFinish ?? onNext}/>
   if (!targetRect) return null
 
   const popoverWidth = Math.min(360, window.innerWidth - 32)
@@ -465,12 +481,13 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
   const focusRight = Math.min(window.innerWidth, targetRect.left + targetRect.width + 7)
   const focusBottom = Math.min(window.innerHeight, targetRect.top + targetRect.height + 7)
   const isDashboardStep = step.startsWith('dashboard-')
+  const isSkipFollowup = step === 'import-tour-skipped' || step === 'dashboard-import-skipped' || step === 'dashboard-tour-skipped'
   // Keep the guided flow actionable on every import screen.  The import
   // confirmation and completion screens are not dashboard steps, but they
   // still need a Next action so the tour can activate the highlighted control
   // for the user.
-  const showNext = isDashboardStep || step === 'import-dropzone' || step === 'import-confirm' || step === 'import-dashboard'
-  const showBack = step !== 'dashboard-import' && step !== 'dashboard-hide-numbers' && Boolean(onBack)
+  const showNext = !isSkipFollowup && (isDashboardStep || step === 'import-dropzone' || step === 'import-confirm' || step === 'import-dashboard')
+  const showBack = isSkipFollowup || (step !== 'dashboard-import' && step !== 'dashboard-hide-numbers' && Boolean(onBack))
   return <div className="onboarding-tour" role="presentation">
     <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: 0, left: 0, right: 0, height: focusTop }}/>
     <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: focusTop, left: 0, width: focusLeft, height: focusBottom - focusTop }}/>
@@ -488,7 +505,7 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
           {showNext && <button type="button" className="onboarding-tour-next" onClick={onNext}>Next</button>}
           {!showBack && !showNext && <span aria-hidden="true"/>}
         </span>
-        <button type="button" className="onboarding-tour-skip onboarding-tour-right-action" onClick={onSkip}>Skip tour</button>
+        <button type="button" className="onboarding-tour-skip onboarding-tour-right-action" onClick={onSkip}>{isSkipFollowup ? 'Final Finish' : 'Skip tour'}</button>
       </div>
     </section>
   </div>
