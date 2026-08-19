@@ -84,6 +84,7 @@ export default function OnboardingTour({ step, onSkip, onBack }: Props) {
   const focusLeft = Math.max(0, targetRect.left - 7)
   const focusRight = Math.min(window.innerWidth, targetRect.left + targetRect.width + 7)
   const focusBottom = Math.min(window.innerHeight, targetRect.top + targetRect.height + 7)
+  const showBack = step !== 'dashboard-import' && Boolean(onBack)
 
   return <div className="onboarding-tour" role="presentation">
     <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: 0, left: 0, right: 0, height: focusTop }}/>
@@ -97,8 +98,8 @@ export default function OnboardingTour({ step, onSkip, onBack }: Props) {
       <h2>{content.title}</h2>
       <p>{content.body}</p>
       <div className="onboarding-tour-actions">
-        {step === 'import-dropzone' && onBack ? <button type="button" className="onboarding-tour-back" onClick={onBack}>Back</button> : <button type="button" className="onboarding-tour-skip" onClick={onSkip}>Skip tour</button>}
-        {step === 'import-dropzone' && <button type="button" className="onboarding-tour-skip onboarding-tour-replay" onClick={onSkip}>Skip tour</button>}
+        {showBack ? <button type="button" className="onboarding-tour-back" onClick={onBack}>Back</button> : <span aria-hidden="true"/>}
+        <button type="button" className="onboarding-tour-skip onboarding-tour-replay" onClick={onSkip}>Skip tour</button>
       </div>
     </section>
   </div>
