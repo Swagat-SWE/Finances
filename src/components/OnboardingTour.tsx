@@ -6,7 +6,6 @@ type Props = {
   step: TourStep
   onSkip: () => void
   onBack?: () => void
-  onReplay?: () => void
 }
 
 const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; body: string }> = {
@@ -34,7 +33,7 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
 
 type Rect = { top: number; left: number; width: number; height: number }
 
-export default function OnboardingTour({ step, onSkip, onBack, onReplay }: Props) {
+export default function OnboardingTour({ step, onSkip, onBack }: Props) {
   const [targetRect, setTargetRect] = useState<Rect | null>(null)
   const [placeAbove, setPlaceAbove] = useState(false)
   const [popoverHeight, setPopoverHeight] = useState(190)
@@ -99,7 +98,7 @@ export default function OnboardingTour({ step, onSkip, onBack, onReplay }: Props
       <p>{content.body}</p>
       <div className="onboarding-tour-actions">
         {step === 'import-dropzone' && onBack ? <button type="button" className="onboarding-tour-back" onClick={onBack}>Back</button> : <button type="button" className="onboarding-tour-skip" onClick={onSkip}>Skip tour</button>}
-        {step === 'import-dropzone' && onReplay && <button type="button" className="onboarding-tour-replay" onClick={onReplay}>Replay</button>}
+        {step === 'import-dropzone' && <button type="button" className="onboarding-tour-skip onboarding-tour-replay" onClick={onSkip}>Skip tour</button>}
       </div>
     </section>
   </div>
