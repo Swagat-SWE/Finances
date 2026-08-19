@@ -698,6 +698,7 @@ export default function App() {
   // so newcomers can see the guidance again while Skip still dismisses it for
   // the current page session.
   const finishTour = () => { setTourScope(null); setTourStep('idle') }
+  const completeCurrentPageTour = () => { if (tourScope === 'current') setTourStep('dashboard-current-tour-complete') }
   const skipImportTour = () => { if (tourStep === 'import-tour-skipped') { setTourStep('dashboard-tour-complete'); return } setTourScope(null); setTourStep('import-tour-skipped') }
   const skipDashboardTour = () => { if (tourStep === 'dashboard-import-skipped' || tourStep === 'dashboard-tour-skipped') { setTourStep('dashboard-tour-complete'); return } setTourScope(null); setTourStep(dataset.length > 0 ? 'dashboard-tour-skipped' : 'dashboard-import-skipped') }
   const beginTourIfNeeded = () => { setTourScope('full'); setTourStep('dashboard-import') }
@@ -728,6 +729,17 @@ export default function App() {
     if (tourStep === 'dashboard-import-skipped') { setTourScope('full'); setTourStep('dashboard-import'); return }
     if (tourStep === 'dashboard-tour-skipped') { setTourScope('full'); setTourStep('dashboard-hide-numbers'); return }
     if (tourStep === 'dashboard-tour-complete') { setTourStep(dataset.length > 0 ? 'dashboard-tour-skipped' : 'dashboard-import-skipped'); return }
+    if (tourStep === 'dashboard-current-tour-complete') {
+      const previousByPage: Record<string, TourStep> = {
+        Overview: 'dashboard-category-accounts',
+        Spending: 'dashboard-spending-modal-close',
+        Categories: 'dashboard-category-card-box',
+        Merchants: 'dashboard-merchant-directory',
+        Statements: 'dashboard-statements-view-toggle',
+      }
+      setTourStep(previousByPage[activeNav] ?? 'dashboard-hide-numbers')
+      return
+    }
     if (tourStep === 'dashboard-spending-card-usage') {
       document.querySelector<HTMLElement>('.chart-point-drawer .modal-close')?.click()
     } else if (tourStep === 'dashboard-spending-card-transactions') {
@@ -796,11 +808,11 @@ export default function App() {
     if (tourStep === 'dashboard-import') { setView('import'); setTourStep('import-dropzone'); return }
     // Page-only tours stop at the natural end of that page instead of
     // continuing into another sidebar destination.
-    if (tourScope === 'current' && activeNav === 'Overview' && tourStep === 'dashboard-category-accounts') { skipDashboardTour(); return }
-    if (tourScope === 'current' && activeNav === 'Spending' && tourStep === 'dashboard-spending-modal-close') { skipDashboardTour(); return }
-    if (tourScope === 'current' && activeNav === 'Categories' && tourStep === 'dashboard-category-card-box') { skipDashboardTour(); return }
-    if (tourScope === 'current' && activeNav === 'Merchants' && tourStep === 'dashboard-merchant-directory') { skipDashboardTour(); return }
-    if (tourScope === 'current' && activeNav === 'Statements' && tourStep === 'dashboard-statements-view-toggle') { skipDashboardTour(); return }
+    if (tourScope === 'current' && activeNav === 'Overview' && tourStep === 'dashboard-category-accounts') { completeCurrentPageTour(); return }
+    if (tourScope === 'current' && activeNav === 'Spending' && tourStep === 'dashboard-spending-modal-close') { completeCurrentPageTour(); return }
+    if (tourScope === 'current' && activeNav === 'Categories' && tourStep === 'dashboard-category-card-box') { completeCurrentPageTour(); return }
+    if (tourScope === 'current' && activeNav === 'Merchants' && tourStep === 'dashboard-merchant-directory') { completeCurrentPageTour(); return }
+    if (tourScope === 'current' && activeNav === 'Statements' && tourStep === 'dashboard-statements-view-toggle') { completeCurrentPageTour(); return }
     if (tourStep === 'dashboard-merchants-view-all') {
       (document.querySelector<HTMLElement>('[data-tour="overview-top-merchants-view-all"]') ?? document.querySelector<HTMLElement>('.monthly-merchant-panel .monthly-panel-heading .text-button'))?.click()
       setTourStep('dashboard-merchants-modal-close')
@@ -932,6 +944,7 @@ export default function App() {
     }
     if (tourStep === 'dashboard-statements-coverage') { setTourStep('dashboard-statements-view-toggle'); return }
     if (tourStep === 'dashboard-statements-view-toggle') { setTourStep('dashboard-tour-complete'); return }
+    if (tourStep === 'dashboard-current-tour-complete') { finishTour(); return }
     if (tourStep === 'dashboard-tour-complete') { finishTour(); return }
     const nextStep: Partial<Record<TourStep, TourStep>> = {
       'dashboard-hide-numbers': 'dashboard-total-spending',

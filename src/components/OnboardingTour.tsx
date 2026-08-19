@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'import-tour-skipped' | 'dashboard-import-skipped' | 'dashboard-tour-skipped' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-category-accounts' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close' | 'dashboard-categories-nav' | 'dashboard-category-by-card' | 'dashboard-category-card-box' | 'dashboard-merchants-nav' | 'dashboard-merchant-by-card' | 'dashboard-merchant-scatter' | 'dashboard-merchant-scatter-expand' | 'dashboard-merchant-scatter-dots' | 'dashboard-merchant-detail-spending' | 'dashboard-merchant-detail-close' | 'dashboard-merchant-scatter-modal-close' | 'dashboard-merchant-frequency' | 'dashboard-merchant-frequency-view-all' | 'dashboard-merchant-frequency-modal-close' | 'dashboard-merchant-directory' | 'dashboard-statements-nav' | 'dashboard-statements-coverage' | 'dashboard-statements-view-toggle' | 'dashboard-tour-complete'
+export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'import-tour-skipped' | 'dashboard-import-skipped' | 'dashboard-tour-skipped' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-category-accounts' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close' | 'dashboard-categories-nav' | 'dashboard-category-by-card' | 'dashboard-category-card-box' | 'dashboard-merchants-nav' | 'dashboard-merchant-by-card' | 'dashboard-merchant-scatter' | 'dashboard-merchant-scatter-expand' | 'dashboard-merchant-scatter-dots' | 'dashboard-merchant-detail-spending' | 'dashboard-merchant-detail-close' | 'dashboard-merchant-scatter-modal-close' | 'dashboard-merchant-frequency' | 'dashboard-merchant-frequency-view-all' | 'dashboard-merchant-frequency-modal-close' | 'dashboard-merchant-directory' | 'dashboard-statements-nav' | 'dashboard-statements-coverage' | 'dashboard-statements-view-toggle' | 'dashboard-current-tour-complete' | 'dashboard-tour-complete'
 
 type Props = {
   step: TourStep
@@ -324,6 +324,12 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     back: true,
     scroll: true,
   },
+  'dashboard-current-tour-complete': {
+    target: 'sidebar-tour-links',
+    title: 'Tour of current page is completed',
+    body: 'The tour of this page is officially done. The owner, Swagat Karki, hopes you would benefit from this website. It took him about 3 hours to make this website.',
+    back: true,
+  },
 }
 
 type Rect = { top: number; left: number; width: number; height: number }
@@ -380,14 +386,14 @@ const confettiPieces = Array.from({ length: 52 }, (_, index) => ({
   rotation: `${(index * 31) % 180 - 90}deg`,
 }))
 
-function TourCompletion({ onBack, onFinish }: { onBack?: () => void; onFinish: () => void }) {
+function TourCompletion({ current, onBack, onFinish }: { current: boolean; onBack?: () => void; onFinish: () => void }) {
   return <div className="onboarding-tour onboarding-tour-completion" role="presentation">
     <div className="tour-confetti-layer" aria-hidden="true">{confettiPieces.map((piece, index) => <span className="tour-confetti-piece" key={index} style={{ left: piece.left, background: piece.color, width: piece.width, height: piece.height, animationDelay: piece.delay, animationDuration: piece.duration, rotate: piece.rotation }}/>)}</div>
     <section className="onboarding-tour-completion-modal" role="dialog" aria-modal="true" aria-labelledby="tour-completion-title">
       <p className="eyebrow">QUICK TOUR</p>
-      <h2 id="tour-completion-title">Tour Completed</h2>
-      <p>The tour is officially done. The owner, Swagat Karki, hopes you would benefit from this website.</p>
-      <p>It took him about <strong>103</strong> hours to make this website.</p>
+      <h2 id="tour-completion-title">{current ? 'Tour of current page is completed' : 'Tour Completed'}</h2>
+      <p>{current ? 'The tour of this page is officially done.' : 'The tour is officially done.'} The owner, Swagat Karki, hopes you would benefit from this website.</p>
+      <p>It took him about <strong>{current ? '3' : '103'}</strong> hours to make this website.</p>
       <div className="onboarding-tour-completion-actions"><button type="button" className="onboarding-tour-back" onClick={onBack}>Back</button><button type="button" className="onboarding-tour-finish" onClick={onFinish}>Finish</button></div>
     </section>
   </div>
@@ -399,7 +405,7 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, onFinish,
   const [popoverHeight, setPopoverHeight] = useState(190)
   const scrolledStepRef = useRef<TourStep | null>(null)
   const content = step === 'idle' ? null : copy[step]
-  const isCompletionStep = step === 'dashboard-tour-complete'
+  const isCompletionStep = step === 'dashboard-tour-complete' || step === 'dashboard-current-tour-complete'
 
   const measure = () => {
     if (!content || isCompletionStep) {
@@ -469,7 +475,7 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, onFinish,
   }, [step, popoverHeight])
 
   if (!content) return null
-  if (isCompletionStep) return <TourCompletion onBack={onBack} onFinish={onFinish ?? onNext}/>
+  if (isCompletionStep) return <TourCompletion current={step === 'dashboard-current-tour-complete'} onBack={onBack} onFinish={onFinish ?? onNext}/>
   if (!targetRect) return null
 
   const popoverWidth = Math.min(360, window.innerWidth - 32)
