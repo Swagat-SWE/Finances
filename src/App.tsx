@@ -797,6 +797,10 @@ export default function App() {
       return
     }
     if (tourStep === 'dashboard-spending-ytd') {
+      setTourStep('dashboard-spending-expand')
+      return
+    }
+    if (tourStep === 'dashboard-spending-expand') {
       const expand = document.querySelector<HTMLElement>('[data-tour="spending-expand"]') ?? document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-expand')
       if (expand) {
         expand.click()
