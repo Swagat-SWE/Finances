@@ -15,7 +15,6 @@ import { isCompleteCalendarMonth } from './services/monthlyAnalytics'
 import { areNumbersHidden, formatMoney, setNumbersHidden } from './utils/display'
 
 const money = { format: formatMoney }
-const ONBOARDING_TOUR_VERSION = 'dashboard-full-v2'
 const nav = [{ icon: LayoutGrid, label: 'Overview', active: true }, { icon: TrendingUp, label: 'Spending' }, { icon: Tag, label: 'Categories' }, { icon: Search, label: 'Merchants' }, { icon: FileText, label: 'Statements' }]
 const publicAsset = (path: string) => `${import.meta.env.BASE_URL}${path}`
 const cardLogoFor = (institution: string) => {
@@ -628,8 +627,11 @@ export default function App() {
   const cards = availableAccounts.map(a => ({ ...a, amount: allSpendingTransactions.filter(t => t.accountId === a.id).reduce((sum, t) => sum + spendingAmount(t), 0) })).sort((a,b) => b.amount-a.amount)
   const total = categoryTotals.reduce((sum, c) => sum + c.amount, 0)
   const finishImport = (review: ReviewTransaction[], statements: Statement[]) => { setImportedTransactions(current => [...current, ...review.map(r => r.transaction)]); setImportedStatements(current => [...current, ...statements]); setDateFilter('all'); setCustomStart(''); setCustomEnd(''); setShowDataBanner(true) }
-  const skipTour = () => { if (typeof window !== 'undefined') window.localStorage.setItem('finances.onboardingTour', ONBOARDING_TOUR_VERSION); setTourStep('idle') }
-  const beginTourIfNeeded = () => { if (typeof window === 'undefined' || window.localStorage.getItem('finances.onboardingTour') !== ONBOARDING_TOUR_VERSION) setTourStep('dashboard-import') }
+  // The tour is intentionally session-scoped. A refresh starts a fresh visit,
+  // so newcomers can see the guidance again while Skip still dismisses it for
+  // the current page session.
+  const skipTour = () => setTourStep('idle')
+  const beginTourIfNeeded = () => setTourStep('dashboard-import')
   const finishTour = skipTour
   const dashboardTourBack = () => {
     const previousStep: Partial<Record<TourStep, TourStep>> = {
