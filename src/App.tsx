@@ -408,7 +408,9 @@ export default function App() {
     setSelectedChartPoint(null)
   }, [activeNav, view])
   useEffect(() => {
-    const timer = window.setTimeout(() => setIntroSplashVisible(false), 5300)
+    // Let the letter-by-letter preview finish, then hold the completed
+    // message for about one second before revealing the name prompt.
+    const timer = window.setTimeout(() => setIntroSplashVisible(false), 4300)
     return () => window.clearTimeout(timer)
   }, [])
   useEffect(() => {
