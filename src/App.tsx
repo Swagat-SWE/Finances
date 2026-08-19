@@ -418,7 +418,9 @@ export default function App() {
   useEffect(() => {
     const handleTourAction = (event: MouseEvent) => {
       const element = event.target instanceof Element ? event.target : null
-      const button = element?.closest('button')
+      if (!element) return
+      if (tourStep === 'dashboard-spending-points' && element.closest('.overview-spending-chart .recharts-dot, .overview-spending-chart .recharts-area-dot')) { setTourStep('dashboard-spending-card-usage'); return }
+      const button = element.closest('button')
       if (!button) return
       const section = button.closest<HTMLElement>('.analytics-four-grid > section')
       const heading = section?.querySelector('h2')?.textContent?.trim()
@@ -426,8 +428,9 @@ export default function App() {
       if (tourStep === 'dashboard-merchants-view-all' && button.matches('.monthly-merchant-panel .monthly-panel-heading .text-button')) { setTourStep('dashboard-merchants-modal-close'); return }
       if (tourStep === 'dashboard-categories-view-all' && heading === 'Categories' && buttonLabel === 'View all') { setTourStep('dashboard-categories-modal-close'); return }
       if (tourStep === 'dashboard-accounts-manage' && heading === 'Accounts' && buttonLabel === 'Manage') { setTourStep('dashboard-accounts-modal-close'); return }
-      if ((tourStep === 'dashboard-categories' || tourStep === 'dashboard-category-filter') && button.matches('.filters .filter-dropdown-wide .filter-dropdown-trigger')) { setTourStep('dashboard-self-made-filters'); return }
+      if (tourStep === 'dashboard-category-filter' && button.matches('.filters .filter-dropdown-wide .filter-dropdown-trigger')) { setTourStep('dashboard-self-made-filters'); return }
       if (tourStep === 'dashboard-spending-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Spending') { setTourStep('dashboard-spending'); return }
+      if (tourStep === 'dashboard-spending-card-usage' && button.matches('.chart-point-drawer-card-section .merchant-detail-card-row')) { setTourStep('dashboard-spending-card-transactions'); return }
       if ((tourStep === 'dashboard-self-made-filters' || tourStep === 'dashboard-source-filters') && button.closest('.filters .filter-dropdown-wide .filter-dropdown-popover')) {
         window.setTimeout(() => {
           const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
@@ -447,6 +450,7 @@ export default function App() {
         else if (tourStep === 'dashboard-accounts-modal-close') setTourStep('dashboard-total')
       }
       if (tourStep === 'dashboard-spending-modal-close' && button.matches('.spending-flow-modal-close')) setTourStep('idle')
+      if (tourStep === 'dashboard-spending-drawer-close' && button.matches('.chart-point-drawer .modal-close')) setTourStep('dashboard-weekday')
     }
     document.addEventListener('click', handleTourAction)
     return () => document.removeEventListener('click', handleTourAction)
@@ -655,6 +659,13 @@ export default function App() {
   const beginTourIfNeeded = () => setTourStep('dashboard-import')
   const finishTour = skipImportTour
   const dashboardTourBack = () => {
+    if (tourStep === 'dashboard-spending-card-usage') {
+      document.querySelector<HTMLElement>('.chart-point-drawer .modal-close')?.click()
+    } else if (tourStep === 'dashboard-spending-card-transactions') {
+      document.querySelector<HTMLElement>('.chart-point-drawer')?.scrollTo({ top: 0, behavior: 'smooth' })
+    } else if (tourStep === 'dashboard-spending-drawer-close') {
+      document.querySelector<HTMLElement>('.chart-point-drawer-transactions-section')?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+    }
     if (['dashboard-self-made-filters', 'dashboard-source-filters', 'dashboard-category-accounts'].includes(tourStep)) {
       const categoryTrigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
       const accountTrigger = document.querySelector<HTMLElement>('[data-tour="overview-account-filter"]')
@@ -665,6 +676,10 @@ export default function App() {
       'dashboard-hide-numbers': 'dashboard-import',
       'dashboard-total-spending': 'dashboard-hide-numbers',
       'dashboard-spending-chart': 'dashboard-total-spending',
+      'dashboard-spending-points': 'dashboard-spending-chart',
+      'dashboard-spending-card-usage': 'dashboard-spending-points',
+      'dashboard-spending-card-transactions': 'dashboard-spending-card-usage',
+      'dashboard-spending-drawer-close': 'dashboard-spending-card-transactions',
       'dashboard-weekday': 'dashboard-spending-chart',
       'dashboard-merchants': 'dashboard-weekday',
       'dashboard-categories': 'dashboard-merchants',
@@ -685,14 +700,8 @@ export default function App() {
   }
   const dashboardTourNext = () => {
     if (tourStep === 'dashboard-import') { setView('import'); setTourStep('import-dropzone'); return }
-    if (tourStep === 'dashboard-categories') {
-      const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
-      if (trigger && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()
-      setTourStep('dashboard-self-made-filters')
-      return
-    }
     if (tourStep === 'dashboard-merchants-view-all') {
-      document.querySelector<HTMLElement>('[data-tour="overview-top-merchants-view-all"]')?.click()
+      (document.querySelector<HTMLElement>('[data-tour="overview-top-merchants-view-all"]') ?? document.querySelector<HTMLElement>('.monthly-merchant-panel .monthly-panel-heading .text-button'))?.click()
       setTourStep('dashboard-merchants-modal-close')
       return
     }
@@ -708,13 +717,18 @@ export default function App() {
       setTourStep('dashboard-accounts-modal-close')
       return
     }
+    if (tourStep === 'dashboard-spending-card-usage' || tourStep === 'dashboard-spending-card-transactions') {
+      document.querySelector<HTMLElement>('.chart-point-drawer')?.scrollTo({ top: 0, behavior: 'smooth' })
+      setTourStep('dashboard-spending-drawer-close')
+      return
+    }
     const nextStep: Partial<Record<TourStep, TourStep>> = {
       'dashboard-hide-numbers': 'dashboard-total-spending',
       'dashboard-total-spending': 'dashboard-spending-chart',
-      'dashboard-spending-chart': 'dashboard-weekday',
+      'dashboard-spending-chart': 'dashboard-spending-points',
       'dashboard-weekday': 'dashboard-merchants',
       'dashboard-merchants': 'dashboard-merchants-view-all',
-      'dashboard-categories': 'dashboard-category-filter',
+      'dashboard-categories': 'dashboard-categories-view-all',
       'dashboard-accounts': 'dashboard-accounts-manage',
       'dashboard-total': 'dashboard-category-filter',
       'dashboard-source-filters': 'dashboard-category-accounts',
@@ -725,6 +739,7 @@ export default function App() {
       'dashboard-spending-ytd': 'dashboard-spending-expand',
     }
     const next = nextStep[tourStep]
+    if (tourStep === 'dashboard-spending-points') return
     if (tourStep === 'dashboard-category-filter') {
       const trigger = document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')
       if (trigger && trigger.getAttribute('aria-expanded') !== 'true') trigger.click()

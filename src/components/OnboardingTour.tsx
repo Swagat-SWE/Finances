@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-source-filters' | 'dashboard-category-accounts' | 'dashboard-category-card-breakdown' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close'
+export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-source-filters' | 'dashboard-category-accounts' | 'dashboard-category-card-breakdown' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close'
 
 type Props = {
   step: TourStep
@@ -48,6 +48,30 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     target: 'overview-spending-chart',
     title: 'Spending over time',
     body: 'This graph shows your spending flow across the year, rising and falling as each month changes. Hover over the graph to see the payments across all your cards during that particular month.',
+    back: true,
+  },
+  'dashboard-spending-points': {
+    target: 'overview-spending-points',
+    title: 'Explore each point',
+    body: 'Hover over these highlighted points to see your numbers, then click a point to see the transactions behind that period.',
+    back: true,
+  },
+  'dashboard-spending-card-usage': {
+    target: 'spending-card-usage',
+    title: 'Cards used',
+    body: 'Every card here is interactive. Click a card to scroll to the exact transactions that make up its total.',
+    back: true,
+  },
+  'dashboard-spending-card-transactions': {
+    target: 'spending-card-transactions',
+    title: 'Exact transactions',
+    body: 'This is the transaction detail for the card you selected. Use Next to return to the top of the detail panel.',
+    back: true,
+  },
+  'dashboard-spending-drawer-close': {
+    target: 'spending-drawer-close',
+    title: 'Close the detail panel',
+    body: 'Click the X to close the detail panel and continue the tour.',
     back: true,
   },
   'dashboard-weekday': {
@@ -192,6 +216,10 @@ const fallbackTargets: Record<string, () => HTMLElement | null> = {
   'spending-ytd': () => document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-total'),
   'spending-expand': () => document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-expand'),
   'spending-modal-close': () => document.querySelector<HTMLElement>('.spending-flow-modal-close'),
+  'overview-spending-points': () => document.querySelector<HTMLElement>('.overview-spending-chart .chart-wrap'),
+  'spending-card-usage': () => document.querySelector<HTMLElement>('.chart-point-drawer-card-section'),
+  'spending-card-transactions': () => document.querySelector<HTMLElement>('.chart-point-drawer-transactions-section'),
+  'spending-drawer-close': () => document.querySelector<HTMLElement>('.chart-point-drawer .modal-close'),
 }
 
 export default function OnboardingTour({ step, onSkip, onNext, onBack, showImportNext = false }: Props) {
@@ -214,6 +242,30 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
     if (content.scroll && scrolledStepRef.current !== step) {
       scrolledStepRef.current = step
       target.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    }
+    // The spending-points step should visually call out the plotted points,
+    // not the entire chart card. Recharts renders each dot as an SVG element;
+    // use their combined bounds so the tour focus spans every point while
+    // still leaving the chart itself clickable.
+    if (content.target === 'overview-spending-points') {
+      const dots = Array.from(document.querySelectorAll<SVGElement>('.overview-spending-chart .recharts-dot, .overview-spending-chart .recharts-area-dot'))
+      if (dots.length) {
+        const bounds = dots.reduce((acc, dot) => {
+          const dotRect = dot.getBoundingClientRect()
+          return {
+            top: Math.min(acc.top, dotRect.top),
+            left: Math.min(acc.left, dotRect.left),
+            right: Math.max(acc.right, dotRect.right),
+            bottom: Math.max(acc.bottom, dotRect.bottom),
+          }
+        }, { top: Infinity, left: Infinity, right: -Infinity, bottom: -Infinity })
+        const center = (bounds.top + bounds.bottom) / 2
+        const height = Math.max(42, bounds.bottom - bounds.top + 24)
+        const rect = { top: center - height / 2, left: bounds.left - 8, width: bounds.right - bounds.left + 16, height }
+        setTargetRect(rect)
+        setPlaceAbove(rect.top + rect.height + popoverHeight + 22 > window.innerHeight)
+        return
+      }
     }
     const rect = target.getBoundingClientRect()
     setTargetRect({ top: rect.top, left: rect.left, width: rect.width, height: rect.height })
