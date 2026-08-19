@@ -99,7 +99,7 @@ export default function OnboardingTour({ step, onSkip, onBack }: Props) {
       <p>{content.body}</p>
       <div className="onboarding-tour-actions">
         {showBack ? <button type="button" className="onboarding-tour-back" onClick={onBack}>Back</button> : <span aria-hidden="true"/>}
-        <button type="button" className="onboarding-tour-skip onboarding-tour-replay" onClick={onSkip}>Skip tour</button>
+        <button type="button" className="onboarding-tour-skip onboarding-tour-right-action" onClick={onSkip}>Skip tour</button>
       </div>
     </section>
   </div>

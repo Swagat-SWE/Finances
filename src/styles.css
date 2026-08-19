@@ -776,7 +776,7 @@ main{position:relative;z-index:1;min-height:100vh;background:#fff;border-radius:
 .onboarding-tour-actions{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-top:3px}
 .onboarding-tour-skip,.onboarding-tour-back,.onboarding-tour-replay{padding:7px 0;border:0;background:transparent;color:#5965d6;font:600 12px inherit;cursor:pointer}
 .onboarding-tour-skip:hover,.onboarding-tour-back:hover,.onboarding-tour-replay:hover{text-decoration:underline;text-underline-offset:3px}
-.onboarding-tour-replay{margin-left:auto}
+.onboarding-tour-right-action{margin-left:auto}
 .onboarding-tour-arrow{position:absolute;width:13px;height:13px;background:#fff;border-left:1px solid #deddf0;border-top:1px solid #deddf0;transform:rotate(45deg);left:calc(50% - 7px);top:-7px}
 .onboarding-tour-popover.above .onboarding-tour-arrow{top:auto;bottom:-7px;transform:rotate(225deg)}
 @keyframes onboarding-focus-pulse{0%,100%{box-shadow:0 0 0 5px rgba(102,114,223,.14),0 8px 24px rgba(42,40,78,.12)}50%{box-shadow:0 0 0 9px rgba(102,114,223,.22),0 10px 28px rgba(42,40,78,.16)}}
