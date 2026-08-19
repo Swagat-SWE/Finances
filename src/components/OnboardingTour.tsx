@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-category-accounts' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close' | 'dashboard-categories-nav' | 'dashboard-category-by-card' | 'dashboard-category-card-box' | 'dashboard-merchants-nav' | 'dashboard-merchant-by-card' | 'dashboard-merchant-scatter' | 'dashboard-merchant-scatter-expand' | 'dashboard-merchant-scatter-dots' | 'dashboard-merchant-detail-spending' | 'dashboard-merchant-detail-close' | 'dashboard-merchant-scatter-modal-close' | 'dashboard-merchant-frequency' | 'dashboard-merchant-frequency-view-all' | 'dashboard-merchant-frequency-modal-close' | 'dashboard-merchant-directory'
+export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-spending-points' | 'dashboard-spending-card-usage' | 'dashboard-spending-card-transactions' | 'dashboard-spending-drawer-close' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-category-accounts' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close' | 'dashboard-categories-nav' | 'dashboard-category-by-card' | 'dashboard-category-card-box' | 'dashboard-merchants-nav' | 'dashboard-merchant-by-card' | 'dashboard-merchant-scatter' | 'dashboard-merchant-scatter-expand' | 'dashboard-merchant-scatter-dots' | 'dashboard-merchant-detail-spending' | 'dashboard-merchant-detail-close' | 'dashboard-merchant-scatter-modal-close' | 'dashboard-merchant-frequency' | 'dashboard-merchant-frequency-view-all' | 'dashboard-merchant-frequency-modal-close' | 'dashboard-merchant-directory' | 'dashboard-statements-nav' | 'dashboard-statements-coverage' | 'dashboard-statements-view-toggle' | 'dashboard-tour-complete'
 
 type Props = {
   step: TourStep
@@ -281,6 +281,33 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     back: true,
     scroll: true,
   },
+  'dashboard-statements-nav': {
+    target: 'statements-nav-item',
+    title: 'Statements',
+    body: 'Statements keep your imported bank and credit-card records organized, so you can revisit the financial history behind your dashboard.',
+    back: true,
+  },
+  'dashboard-statements-coverage': {
+    target: 'statements-coverage',
+    title: 'Statement coverage',
+    body: 'Statement coverage shows how many months, cards, and source statements are represented in your financial history.',
+    back: true,
+    scroll: true,
+  },
+  'dashboard-statements-view-toggle': {
+    target: 'statements-view-toggle',
+    title: 'Filter your statements',
+    body: 'Use By Month to review each period or By Card to follow one account across its statement history.',
+    back: true,
+    scroll: true,
+  },
+  'dashboard-tour-complete': {
+    target: 'statements-view-toggle',
+    title: 'Tour complete',
+    body: 'The tour is officially done. The owner, Swagat Karki, hopes you would benefit from this website. It took him about 103 hours to make his website.',
+    back: true,
+    scroll: true,
+  },
 }
 
 type Rect = { top: number; left: number; width: number; height: number }
@@ -317,6 +344,9 @@ const fallbackTargets: Record<string, () => HTMLElement | null> = {
   'merchant-frequency-view-all': () => document.querySelector<HTMLElement>('.merchant-frequency-panel .text-button'),
   'merchant-frequency-modal-close': () => document.querySelector<HTMLElement>('.merchant-frequency-modal .modal-close'),
   'merchant-directory': () => document.querySelector<HTMLElement>('.merchant-directory-panel'),
+  'statements-nav-item': () => Array.from(document.querySelectorAll<HTMLElement>('.nav-item')).find(item => item.textContent?.trim() === 'Statements') ?? null,
+  'statements-coverage': () => document.querySelector<HTMLElement>('.statements-coverage-summary'),
+  'statements-view-toggle': () => document.querySelector<HTMLElement>('.statements-archive-toolbar'),
   'overview-spending-points': () => document.querySelector<HTMLElement>('.overview-spending-chart .chart-wrap') ?? document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-chart'),
   'spending-card-usage': () => document.querySelector<HTMLElement>('.chart-point-drawer-card-section'),
   'spending-card-transactions': () => document.querySelector<HTMLElement>('.chart-point-drawer-transactions-section'),

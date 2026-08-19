@@ -435,6 +435,7 @@ export default function App() {
       if (tourStep === 'dashboard-spending-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Spending') { setTourStep('dashboard-spending'); return }
       if (tourStep === 'dashboard-categories-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Categories') { setTourStep('dashboard-category-by-card'); return }
       if (tourStep === 'dashboard-merchants-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Merchants') { setTourStep('dashboard-merchant-by-card'); return }
+      if (tourStep === 'dashboard-statements-nav' && button.matches('.nav-item') && button.textContent?.trim() === 'Statements') { setTourStep('dashboard-statements-coverage'); return }
       if (tourStep === 'dashboard-spending-card-usage' && button.matches('.chart-point-drawer-card-section .merchant-detail-card-row')) { setTourStep('dashboard-spending-card-transactions'); return }
       if (tourStep === 'dashboard-self-made-filters' && button.closest('.filters .filter-dropdown-wide .filter-dropdown-popover')) {
         window.setTimeout(() => {
@@ -742,6 +743,10 @@ export default function App() {
       'dashboard-merchant-frequency-view-all': 'dashboard-merchant-frequency',
       'dashboard-merchant-frequency-modal-close': 'dashboard-merchant-frequency-view-all',
       'dashboard-merchant-directory': 'dashboard-merchant-frequency-modal-close',
+      'dashboard-statements-nav': 'dashboard-merchant-directory',
+      'dashboard-statements-coverage': 'dashboard-statements-nav',
+      'dashboard-statements-view-toggle': 'dashboard-statements-coverage',
+      'dashboard-tour-complete': 'dashboard-statements-view-toggle',
     }
     const previous = previousStep[tourStep]
     if (previous) setTourStep(previous)
@@ -868,7 +873,18 @@ export default function App() {
       else setTourStep('dashboard-merchant-directory')
       return
     }
-    if (tourStep === 'dashboard-merchant-directory') { skipDashboardTour(); return }
+    if (tourStep === 'dashboard-merchant-directory') { setTourStep('dashboard-statements-nav'); return }
+    if (tourStep === 'dashboard-statements-nav') {
+      const statementsNav = document.querySelector<HTMLElement>('[data-tour="statements-nav-item"]') ?? Array.from(document.querySelectorAll<HTMLElement>('.nav-item')).find(item => item.textContent?.trim() === 'Statements')
+      if (statementsNav) {
+        statementsNav.click()
+        window.requestAnimationFrame(() => setTourStep('dashboard-statements-coverage'))
+      } else setTourStep('dashboard-statements-coverage')
+      return
+    }
+    if (tourStep === 'dashboard-statements-coverage') { setTourStep('dashboard-statements-view-toggle'); return }
+    if (tourStep === 'dashboard-statements-view-toggle') { setTourStep('dashboard-tour-complete'); return }
+    if (tourStep === 'dashboard-tour-complete') { skipDashboardTour(); return }
     const nextStep: Partial<Record<TourStep, TourStep>> = {
       'dashboard-hide-numbers': 'dashboard-total-spending',
       'dashboard-total-spending': 'dashboard-spending-chart',
