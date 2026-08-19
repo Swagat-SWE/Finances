@@ -736,6 +736,15 @@ main{position:relative;z-index:1;min-height:100vh;background:#fff;border-radius:
 .app-shell:has(.chart-point-drawer-backdrop) .sidebar,.app-shell:has(.merchant-detail-backdrop) .sidebar{z-index:0}
 .app-shell:has(.chart-point-drawer-backdrop) .sidebar,.app-shell:has(.merchant-detail-backdrop) .sidebar{filter:blur(6px) saturate(.72);opacity:.58;pointer-events:none;transition:filter .18s ease,opacity .18s ease}
 .app-shell:has(.modal-backdrop) .sidebar{z-index:0;filter:blur(6px) saturate(.72);opacity:.58;pointer-events:none;transition:filter .18s ease,opacity .18s ease}
+/* Keep every focused overlay above the fixed navigation.  The main content
+   establishes its own stacking context, so lowering the sidebar while an
+   overlay is open is what lets the fixed backdrop cover the full viewport. */
+.app-shell:has(.spending-flow-modal-backdrop) .sidebar,
+.app-shell:has(.merchant-chart-modal-backdrop) .sidebar,
+.app-shell:has(.merchant-frequency-modal-backdrop) .sidebar{z-index:0;filter:blur(6px) saturate(.72);opacity:.58;pointer-events:none;transition:filter .18s ease,opacity .18s ease}
+.app-shell:has(.spending-flow-modal-backdrop) .nav-item.active,
+.app-shell:has(.merchant-chart-modal-backdrop) .nav-item.active,
+.app-shell:has(.merchant-frequency-modal-backdrop) .nav-item.active{background:transparent;color:#777584;font-weight:500}
 .intro-splash{position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:#fff;color:#000;text-align:center}
 .intro-splash-content{width:min(100%,900px);padding:48px 24px}
 .intro-splash-heading{margin:0;color:#000;font-family:'Playfair Display',serif;font-size:60px;font-weight:700;line-height:1.08;letter-spacing:.02em}
