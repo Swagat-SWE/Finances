@@ -424,8 +424,8 @@ export default function App() {
   }, [view, tourStep])
   useEffect(() => {
     // Let the letter-by-letter preview finish, then hold the completed
-    // message for about one second before revealing the name prompt.
-    const timer = window.setTimeout(() => setIntroSplashVisible(false), 4300)
+    // message for about two seconds before revealing the name prompt.
+    const timer = window.setTimeout(() => setIntroSplashVisible(false), 5300)
     return () => window.clearTimeout(timer)
   }, [])
   useEffect(() => {
