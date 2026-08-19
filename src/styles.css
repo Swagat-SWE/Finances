@@ -754,7 +754,7 @@ main{position:relative;z-index:1;min-height:100vh;background:#fff;border-radius:
 .app-shell:has(.merchant-frequency-modal-backdrop) .nav-item.active{background:transparent;color:#777584;font-weight:500}
 .intro-splash{position:fixed;inset:0;z-index:120;display:grid;place-items:center;background:#fff;color:#000;text-align:center}
 .intro-money-rain{position:absolute;inset:0;z-index:0;overflow:hidden;pointer-events:none}
-.intro-money-note{position:absolute;top:-38px;display:grid;place-items:center;width:30px;height:18px;border:1px solid rgba(20,103,67,.3);border-radius:4px;color:#fff;font:700 12px/1 'Plus Jakarta Sans';opacity:0;box-shadow:0 5px 12px rgba(33,111,76,.16);animation:intro-money-fall linear infinite;will-change:transform,opacity}
+.intro-money-note{position:absolute;top:-38px;display:grid;place-items:center;width:30px;height:18px;border:1px solid rgba(20,103,67,.3);border-radius:4px;color:#fff;font:700 12px/1 'Plus Jakarta Sans';opacity:0;box-shadow:0 5px 12px rgba(33,111,76,.16);animation:intro-money-fall linear 1 forwards;will-change:transform,opacity}
 .intro-money-note.tone-0{background:linear-gradient(135deg,#4caf7c,#26885e)}
 .intro-money-note.tone-1{background:linear-gradient(135deg,#62b987,#318b65)}
 .intro-money-note.tone-2{background:linear-gradient(135deg,#3e9f72,#1f7654)}
