@@ -320,14 +320,14 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
   'dashboard-tour-complete': {
     target: 'statements-view-toggle',
     title: 'Tour complete',
-    body: 'The tour is officially done. The owner, Swagat Karki, hopes you would benefit from this website. It took him about 103 hours to make his website.',
+    body: 'It took Swagat Karki, the owner, 103 hours to make this website to help people understand finances. I hope you will find this beneficial and this will hopefully help you improve your credit score and, most importantly, your finances and daily life to help you lead a sustainable and healthy life. May God bless you.',
     back: true,
     scroll: true,
   },
   'dashboard-current-tour-complete': {
     target: 'sidebar-tour-links',
     title: 'Tour of current page is completed',
-    body: 'The tour of this page is officially done. The owner, Swagat Karki, hopes you would benefit from this website. It took him about 3 hours to make this website.',
+    body: 'It took Swagat Karki, the owner, 103 hours to make this website to help people understand finances. I hope you will find this beneficial and this will hopefully help you improve your credit score and, most importantly, your finances and daily life to help you lead a sustainable and healthy life. May God bless you.',
     back: true,
   },
 }
@@ -392,8 +392,8 @@ function TourCompletion({ current, onBack, onFinish }: { current: boolean; onBac
     <section className="onboarding-tour-completion-modal" role="dialog" aria-modal="true" aria-labelledby="tour-completion-title">
       <p className="eyebrow">QUICK TOUR</p>
       <h2 id="tour-completion-title">{current ? 'Tour of current page is completed' : 'Tour Completed'}</h2>
-      <p>{current ? 'The tour of this page is officially done.' : 'The tour is officially done.'} The owner, Swagat Karki, hopes you would benefit from this website.</p>
-      <p>It took him about <strong>{current ? '3' : '103'}</strong> hours to make this website.</p>
+      <p>It took Swagat Karki, the owner, <strong>103</strong> hours to make this website to help people understand finances.</p>
+      <p>I hope you will find this beneficial and this will hopefully help you improve your credit score and, most importantly, your finances and daily life to help you lead a sustainable and healthy life. May God bless you.</p>
       <div className="onboarding-tour-completion-actions"><button type="button" className="onboarding-tour-back" onClick={onBack}>Back</button><button type="button" className="onboarding-tour-finish" onClick={onFinish}>Finish</button></div>
     </section>
   </div>
