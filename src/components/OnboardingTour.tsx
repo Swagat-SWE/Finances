@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react'
 
-export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total'
+export type TourStep = 'idle' | 'dashboard-import' | 'import-dropzone' | 'import-confirm' | 'import-dashboard' | 'dashboard-hide-numbers' | 'dashboard-total-spending' | 'dashboard-spending-chart' | 'dashboard-weekday' | 'dashboard-merchants' | 'dashboard-merchants-view-all' | 'dashboard-merchants-modal-close' | 'dashboard-categories' | 'dashboard-categories-view-all' | 'dashboard-categories-modal-close' | 'dashboard-accounts' | 'dashboard-accounts-manage' | 'dashboard-accounts-modal-close' | 'dashboard-total' | 'dashboard-category-filter' | 'dashboard-self-made-filters' | 'dashboard-source-filters' | 'dashboard-category-accounts' | 'dashboard-category-card-breakdown' | 'dashboard-spending-nav' | 'dashboard-spending' | 'dashboard-spending-ytd' | 'dashboard-spending-expand' | 'dashboard-spending-modal-close'
 
 type Props = {
   step: TourStep
@@ -115,6 +115,60 @@ const copy: Record<Exclude<TourStep, 'idle'>, { target: string; title: string; b
     back: true,
     scroll: true,
   },
+  'dashboard-category-filter': {
+    target: 'overview-category-filter',
+    title: 'All Categories',
+    body: 'Open Category: All Categories to filter the transactions and focus on exactly where your money went.',
+    scroll: true,
+  },
+  'dashboard-self-made-filters': {
+    target: 'overview-category-filter-popover',
+    title: 'Self-made filters',
+    body: 'Amazon, Groceries, Gas, and Paid are self-made filters created by Swagat Karki, the product owner, to make everyday finance reviews easier.',
+  },
+  'dashboard-source-filters': {
+    target: 'overview-category-filter-popover',
+    title: 'Your personal card filters',
+    body: 'Now these are your personal filters from your own credit card CSV files. Scroll through the list to see each card’s categories.',
+  },
+  'dashboard-category-accounts': {
+    target: 'overview-account-filter',
+    title: 'All Accounts',
+    body: 'All Accounts brings every card’s categories together. Choose one account to focus the category list on that card.',
+    scroll: true,
+  },
+  'dashboard-category-card-breakdown': {
+    target: 'overview-accounts',
+    title: 'Categories change with the card',
+    body: 'Choose one of these cards to see only its categories. Choose All Accounts to bring every card’s categories back.',
+    scroll: true,
+  },
+  'dashboard-spending-nav': {
+    target: 'spending-nav-item',
+    title: 'Spending',
+    body: 'Spending shows the graphs for all of your cards, so you can see how and when each card was used.',
+  },
+  'dashboard-spending': {
+    target: 'spending-view',
+    title: 'Your spending flows',
+    body: 'Compare each card’s spending flow and the combined view to understand how your usage changes over time.',
+    scroll: true,
+  },
+  'dashboard-spending-ytd': {
+    target: 'spending-ytd',
+    title: 'Change the time period',
+    body: 'Use YTD to change the time period to 6 months, 3 months, 30 days, or 7 days.',
+  },
+  'dashboard-spending-expand': {
+    target: 'spending-expand',
+    title: 'Expand a chart',
+    body: 'Click the expand button to open this chart in a larger view.',
+  },
+  'dashboard-spending-modal-close': {
+    target: 'spending-modal-close',
+    title: 'Close the expanded chart',
+    body: 'Click the X to close the expanded chart and continue the tour.',
+  },
 }
 
 type Rect = { top: number; left: number; width: number; height: number }
@@ -128,6 +182,14 @@ const fallbackTargets: Record<string, () => HTMLElement | null> = {
   'overview-top-merchants-modal-close': () => document.querySelector<HTMLElement>('.monthly-merchants-modal .modal-close'),
   'overview-categories-modal-close': () => document.querySelector<HTMLElement>('.modal-backdrop .dashboard-modal .modal-close'),
   'overview-accounts-modal-close': () => document.querySelector<HTMLElement>('.modal-backdrop .dashboard-modal .modal-close'),
+  'overview-category-filter': () => document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger'),
+  'overview-category-filter-popover': () => document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-popover'),
+  'overview-account-filter': () => document.querySelector<HTMLElement>('.filters .filter-dropdown:not(.filter-dropdown-wide) .filter-dropdown-trigger'),
+  'spending-nav-item': () => Array.from(document.querySelectorAll<HTMLElement>('.nav-item')).find(item => item.textContent?.trim() === 'Spending') ?? null,
+  'spending-view': () => document.querySelector<HTMLElement>('.spending-view-header'),
+  'spending-ytd': () => document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-total'),
+  'spending-expand': () => document.querySelector<HTMLElement>('.spending-flow-card-combined .spending-flow-expand'),
+  'spending-modal-close': () => document.querySelector<HTMLElement>('.spending-flow-modal-close'),
 }
 
 export default function OnboardingTour({ step, onSkip, onNext, onBack, showImportNext = false }: Props) {

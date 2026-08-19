@@ -191,7 +191,7 @@ function SpendingFlowChart({ title, accountList, data, transactions, range, onRa
   return <section className={`spending-flow-card ${combined ? 'spending-flow-card-combined' : ''}`}>
     <div className="spending-flow-card-header">
       <div className="spending-flow-title">{logo && <span className={`spending-flow-logo spending-flow-logo-${headerAccount?.id ?? 'card'}`}><img src={logo} alt={`${headerAccount?.institution ?? 'Card'} logo`}/></span>}<h2>{title}</h2></div>
-      <div className="spending-flow-card-actions"><div className="spending-flow-total"><FilterDropdown label="Range" hideLabel compact value={range} options={spendingFlowRanges} onChange={value => onRangeChange(value as SpendingFlowRange)}/></div>{onExpand && !expanded && <button className="spending-flow-expand" type="button" aria-label={`Expand ${title} chart`} title="Expand chart" onClick={onExpand}><Maximize2 size={15}/></button>}</div>
+      <div className="spending-flow-card-actions"><div className="spending-flow-total" data-tour={combined ? 'spending-ytd' : undefined}><FilterDropdown label="Range" hideLabel compact value={range} options={spendingFlowRanges} onChange={value => onRangeChange(value as SpendingFlowRange)}/></div>{onExpand && !expanded && <button className="spending-flow-expand" data-tour={combined ? 'spending-expand' : undefined} type="button" aria-label={`Expand ${title} chart`} title="Expand chart" onClick={onExpand}><Maximize2 size={15}/></button>}</div>
     </div>
     <div className="spending-flow-metrics"><div><small>Total spending</small><strong className="amount-positive">{money.format(total)}</strong></div><div><small>Transactions</small><strong>{metricTransactions.length}</strong></div><div><small>Average</small><strong className="amount-positive">{money.format(average)}</strong></div><div><small>Cards used</small><strong>{cardsUsed}</strong></div></div>
     {chartData.length ? <div className="spending-flow-chart"><ResponsiveContainer width="100%" height="100%"><AreaChart data={chartData} margin={{ top: 10, right: 8, left: -18, bottom: 0 }} onClick={state => { const chartState = state as unknown as { activeTooltipIndex?: number | string; activeLabel?: string | number }; const index = typeof chartState.activeTooltipIndex === 'number' ? chartState.activeTooltipIndex : Number(chartState.activeTooltipIndex); const sourcePoint = Number.isInteger(index) && index >= 0 ? data[index] : data.find(candidate => candidate.label === String(chartState.activeLabel)); if (sourcePoint) { const byAccount = sourcePoint.values; onPointClick?.({ key: sourcePoint.key, label: sourcePoint.label, amount: Object.values(byAccount).reduce((sum, value) => sum + value, 0), byAccount }) } }}>
@@ -426,11 +426,14 @@ export default function App() {
       if (tourStep === 'dashboard-merchants-view-all' && button.matches('.monthly-merchant-panel .monthly-panel-heading .text-button')) { setTourStep('dashboard-merchants-modal-close'); return }
       if (tourStep === 'dashboard-categories-view-all' && heading === 'Categories' && buttonLabel === 'View all') { setTourStep('dashboard-categories-modal-close'); return }
       if (tourStep === 'dashboard-accounts-manage' && heading === 'Accounts' && buttonLabel === 'Manage') { setTourStep('dashboard-accounts-modal-close'); return }
+      if (tourStep === 'dashboard-category-filter' && button.matches('.filters .filter-dropdown-wide .filter-dropdown-trigger')) { setTourStep('dashboard-self-made-filters'); return }
+      if (tourStep === 'dashboard-spending-expand' && button.matches('.spending-flow-card-combined .spending-flow-expand')) { setTourStep('dashboard-spending-modal-close'); return }
       if (button.matches('.modal-close')) {
         if (tourStep === 'dashboard-merchants-modal-close') setTourStep('dashboard-categories')
         else if (tourStep === 'dashboard-categories-modal-close') setTourStep('dashboard-accounts')
         else if (tourStep === 'dashboard-accounts-modal-close') setTourStep('dashboard-total')
       }
+      if (tourStep === 'dashboard-spending-modal-close' && button.matches('.spending-flow-modal-close')) setTourStep('idle')
     }
     document.addEventListener('click', handleTourAction)
     return () => document.removeEventListener('click', handleTourAction)
@@ -660,9 +663,18 @@ export default function App() {
       'dashboard-merchants': 'dashboard-merchants-view-all',
       'dashboard-categories': 'dashboard-categories-view-all',
       'dashboard-accounts': 'dashboard-accounts-manage',
+      'dashboard-total': 'dashboard-category-filter',
+      'dashboard-source-filters': 'dashboard-category-accounts',
+      'dashboard-category-accounts': 'dashboard-category-card-breakdown',
+      'dashboard-category-card-breakdown': 'dashboard-spending-nav',
+      'dashboard-spending-nav': 'dashboard-spending',
+      'dashboard-spending': 'dashboard-spending-ytd',
+      'dashboard-spending-ytd': 'dashboard-spending-expand',
     }
     const next = nextStep[tourStep]
-    if (tourStep === 'dashboard-merchants-view-all' || tourStep === 'dashboard-categories-view-all' || tourStep === 'dashboard-accounts-manage' || tourStep === 'dashboard-merchants-modal-close' || tourStep === 'dashboard-categories-modal-close' || tourStep === 'dashboard-accounts-modal-close') return
+    if (tourStep === 'dashboard-merchants-view-all' || tourStep === 'dashboard-categories-view-all' || tourStep === 'dashboard-accounts-manage' || tourStep === 'dashboard-merchants-modal-close' || tourStep === 'dashboard-categories-modal-close' || tourStep === 'dashboard-accounts-modal-close' || tourStep === 'dashboard-category-filter' || tourStep === 'dashboard-spending-expand') return
+    if (tourStep === 'dashboard-self-made-filters') { document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-popover')?.scrollTo({ top: document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-popover')?.scrollHeight ?? 0, behavior: 'smooth' }); setTourStep('dashboard-source-filters'); return }
+    if (tourStep === 'dashboard-source-filters') { document.querySelector<HTMLElement>('.filters .filter-dropdown-wide .filter-dropdown-trigger')?.click(); setTourStep('dashboard-category-accounts'); return }
     if (next) setTourStep(next)
     else if (tourStep === 'dashboard-total') skipDashboardTour()
   }
