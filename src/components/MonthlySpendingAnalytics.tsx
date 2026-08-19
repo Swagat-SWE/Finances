@@ -34,7 +34,7 @@ export default function MonthlySpendingAnalytics({ month, monthLabel, transactio
   const maxAllMerchantAmount = Math.max(...allMerchants.map(merchant => merchant.amount), 0)
   const hasSpending = maxDayAmount > 0
 
-  const weekdayPanel = <section className="panel monthly-panel monthly-weekday-panel">
+  const weekdayPanel = <section className="panel monthly-panel monthly-weekday-panel" data-tour="overview-weekday">
     <div className="monthly-panel-heading"><div><h2 className="monthly-panel-title">Spending by day of week</h2></div></div>
     <div className="weekday-list">{dayStats.map(day => <div key={day.key} className="weekday-row" onMouseEnter={() => setHoveredDay(day.key)} onMouseLeave={() => setHoveredDay(null)} onFocus={() => setHoveredDay(day.key)} onBlur={() => setHoveredDay(null)} onClick={() => onWeekdayClick?.(day.key)} onKeyDown={event => { if (event.key === 'Enter' || event.key === ' ') { event.preventDefault(); onWeekdayClick?.(day.key) } }} tabIndex={0} aria-label={`${day.label}: ${money.format(day.amount)} spent across ${day.spendingTransactionCount} spending transactions. Click to view these transactions.`}>
       <span className="weekday-label-wrap"><span className="weekday-label">{day.label}</span></span><span className="weekday-bar-wrap">{day.key === highestDay.key && day.amount > 0 && <small className="weekday-highest-label">HIGHEST</small>}<span className="weekday-bar-track"><span className={`weekday-bar ${day.key === highestDay.key ? 'highest' : ''}`} style={{ width: `${maxDayAmount ? Math.max(day.amount / maxDayAmount * 100, day.amount ? 3 : 0) : 0}%` }}/></span></span><strong className="weekday-amount">{money.format(day.amount)}</strong>
@@ -42,7 +42,7 @@ export default function MonthlySpendingAnalytics({ month, monthLabel, transactio
     </div>)}</div>
   </section>
 
-  const merchantPanel = <section className="panel monthly-panel monthly-merchant-panel">
+  const merchantPanel = <section className="panel monthly-panel monthly-merchant-panel" data-tour="overview-top-merchants">
     <div className="monthly-panel-heading"><div><h2 className="monthly-panel-title">Top merchants</h2></div><button className="text-button" onClick={() => setShowMerchantsModal(true)}>View all</button></div>
     {merchants.length ? <div className="merchant-ranking">{merchants.map((merchant, index) => <button key={merchant.name} className="monthly-merchant-row" onClick={() => onMerchantClick?.(merchant.name)} aria-label={`${merchant.name}: ${money.format(merchant.amount)} across ${merchant.transactionCount} transactions`}><span className={`merchant-rank ${index === 0 ? 'top' : ''}`}>{index + 1}</span><span className="merchant-copy"><strong title={merchant.name}>{merchant.name}</strong><small>{merchant.transactionCount} transaction{merchant.transactionCount === 1 ? '' : 's'}</small><span className="merchant-bar-track"><span className="merchant-bar" style={{ width: `${maxMerchantAmount ? Math.max(merchant.amount / maxMerchantAmount * 100, 3) : 0}%` }}/></span></span><b>{money.format(merchant.amount)}</b><ArrowUpRight size={14} className="merchant-arrow"/></button>)}</div> : <div className="monthly-panel-empty"><span className="monthly-empty-icon"><Store size={20}/></span><strong>No spending this month</strong><p>There aren't any spending transactions in this period.</p></div>}
     {merchants.length > 0 && <p className="monthly-merchant-hint">Select a merchant to find its transactions below.</p>}
