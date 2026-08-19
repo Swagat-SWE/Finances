@@ -222,6 +222,8 @@ function SpendingView({ transactions, availableAccounts }: { transactions: Trans
   const openFlowPoint = (point: SpendingChartPoint, accountIds: string[]) => {
     const pointTransactions = spending.filter(transaction => accountIds.includes(transaction.accountId) && (point.key.length === 7 ? transaction.transactionDate.startsWith(point.key) : transaction.transactionDate === point.key)).sort((first, second) => second.transactionDate.localeCompare(first.transactionDate))
     setSelectedFlowPoint({ point, transactions: pointTransactions, accountIds })
+    const hasMultipleCards = new Set(pointTransactions.map(transaction => transaction.accountId)).size > 1
+    window.dispatchEvent(new CustomEvent('ledgerly-spending-point', { detail: { hasMultipleCards } }))
   }
   useEffect(() => {
     if (!expandedFlowKey) return
@@ -419,13 +421,6 @@ export default function App() {
     const handleTourAction = (event: MouseEvent) => {
       const element = event.target instanceof Element ? event.target : null
       if (!element) return
-      if (tourStep === 'dashboard-spending-points' && element.closest('.overview-spending-chart .recharts-dot, .overview-spending-chart .recharts-area-dot, .spending-flow-card .recharts-dot, .spending-flow-card .recharts-area-dot')) {
-        // The drawer is mounted by the chart click handler in the same event
-        // turn. Wait one frame so we can distinguish the multi-card Card usage
-        // section from a single-card drawer before positioning the tour.
-        window.setTimeout(() => setTourStep(document.querySelector('.chart-point-drawer-card-section') ? 'dashboard-spending-card-usage' : 'dashboard-spending-drawer-close'), 0)
-        return
-      }
       const button = element.closest('button')
       if (!button) return
       const section = button.closest<HTMLElement>('.analytics-four-grid > section')
@@ -452,8 +447,17 @@ export default function App() {
       if (tourStep === 'dashboard-spending-modal-close' && button.matches('.spending-flow-modal-close')) setTourStep('idle')
       if (tourStep === 'dashboard-spending-drawer-close' && button.matches('.chart-point-drawer .modal-close')) setTourStep(activeNav === 'Spending' ? 'dashboard-spending-ytd' : 'dashboard-weekday')
     }
+    const handleSpendingPoint = (event: Event) => {
+      if (tourStep !== 'dashboard-spending-points') return
+      const hasMultipleCards = Boolean((event as CustomEvent<{ hasMultipleCards?: boolean }>).detail?.hasMultipleCards)
+      window.requestAnimationFrame(() => setTourStep(hasMultipleCards ? 'dashboard-spending-card-usage' : 'dashboard-spending-drawer-close'))
+    }
     document.addEventListener('click', handleTourAction)
-    return () => document.removeEventListener('click', handleTourAction)
+    window.addEventListener('ledgerly-spending-point', handleSpendingPoint)
+    return () => {
+      document.removeEventListener('click', handleTourAction)
+      window.removeEventListener('ledgerly-spending-point', handleSpendingPoint)
+    }
   }, [tourStep, activeNav])
   // Re-apply the current categorization rules to transactions already held in
   // the browser. Imports are kept in state as a snapshot, so a rule update
@@ -603,6 +607,14 @@ export default function App() {
     if (!selectedChartPoint) return []
     return chartTransactions.filter(transaction => chartUsesDailyPoints ? transaction.transactionDate === selectedChartPoint.key : transaction.transactionDate.startsWith(selectedChartPoint.key)).sort((first, second) => second.transactionDate.localeCompare(first.transactionDate))
   }, [chartTransactions, chartUsesDailyPoints, selectedChartPoint])
+  useEffect(() => {
+    if (tourStep !== 'dashboard-spending-points' || !selectedChartPoint) return
+    const frame = window.requestAnimationFrame(() => {
+      const hasMultipleCards = new Set(selectedChartTransactions.map(transaction => transaction.accountId)).size > 1
+      window.dispatchEvent(new CustomEvent('ledgerly-spending-point', { detail: { hasMultipleCards } }))
+    })
+    return () => window.cancelAnimationFrame(frame)
+  }, [selectedChartPoint, selectedChartTransactions, tourStep])
   const chartAccountIds = useMemo(() => Array.from(new Set(chartSourceTransactions.map(transaction => transaction.accountId))), [chartSourceTransactions])
   const chartData = useMemo<SpendingChartPoint[]>(() => {
     if (!chartRange) return []

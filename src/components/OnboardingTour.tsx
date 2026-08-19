@@ -222,7 +222,11 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
       setTargetRect(null)
       return
     }
-    const target = document.querySelector<HTMLElement>(`[data-tour="${content.target}"]`) ?? fallbackTargets[content.target]?.() ?? (content.target === 'overview-transaction-total' ? document.querySelector<HTMLElement>('.transaction-total-row') : null)
+    // The self-made step should focus the complete Category dropdown (trigger
+    // plus its open popover), not only the group label inside the popover.
+    const target = content.target === 'overview-self-made-filters'
+      ? document.querySelector<HTMLElement>('.filters .filter-dropdown-wide') ?? document.querySelector<HTMLElement>(`[data-tour="${content.target}"]`)
+      : document.querySelector<HTMLElement>(`[data-tour="${content.target}"]`) ?? fallbackTargets[content.target]?.() ?? (content.target === 'overview-transaction-total' ? document.querySelector<HTMLElement>('.transaction-total-row') : null)
     if (!target) {
       setTargetRect(null)
       return
