@@ -17,7 +17,29 @@ export default function ImportFlow({ accounts, categories, importedStatements, t
   const updateReview = (id: string, key: 'merchantNormalized'|'amount'|'transactionDate'|'transactionType'|'categoryId'|'accountId', value: string) => setImports(current => current.map(item => ({ ...item, transactions: item.transactions.map(review => review.transaction.id === id ? { ...review, transaction: { ...review.transaction, [key]: key === 'amount' ? Number(value) : value }, flags: review.flags.filter(flag => !((key === 'merchantNormalized' && flag.field === 'merchant') || (key === 'amount' && flag.field === 'amount') || (key === 'transactionDate' && flag.field === 'date') || (key === 'accountId' && flag.field === 'account') || (key === 'categoryId' && flag.field === 'category'))) } : review) })))
   const reviewTransactions = imports.flatMap(i => i.transactions); const importable = imports.filter(i => i.statement.status === 'ready' || i.statement.status === 'warning'); const flags = reviewTransactions.flatMap(t => t.flags); const continueReview = () => setStep('review'); const confirm = () => { onComplete(reviewTransactions, importable.map(i => ({ ...i.statement, status: 'imported', importedAt: new Date().toISOString() }))); if (tourStep === 'import-confirm') onTourStep?.('import-dashboard'); setImportedCount(reviewTransactions.length); setStep('complete') }
   const leaveCompletion = () => { onBack(); onTourStep?.('dashboard-hide-numbers') }
-  const handleTourNext = () => { if (tourStep === 'import-dropzone' && showImportNext && imports.length > 0) { setShowImportNext(false); onTourStep?.('import-confirm'); return } if (tourStep === 'import-confirm' && importable.length > 0) { onTourStep?.('import-dashboard'); return } if (tourStep === 'import-dashboard') leaveCompletion() }
+  const handleTourNext = () => {
+    if (tourStep === 'import-dropzone') {
+      // Let Next perform the same action as clicking the highlighted drop
+      // zone.  The native file picker remains user-controlled; once files
+      // finish processing, addFiles advances the tour to import-confirm.
+      if (!imports.length || showImportNext) {
+        setShowImportNext(false)
+        document.querySelector<HTMLElement>('[data-tour="import-dropzone"]')?.click()
+      }
+      return
+    }
+    if (tourStep === 'import-confirm' && importable.length > 0) {
+      // Confirm through the real button so all existing import/completion
+      // behavior remains in one path.
+      document.querySelector<HTMLElement>('[data-tour="import-confirm"]')?.click()
+      return
+    }
+    if (tourStep === 'import-dashboard') {
+      // The completion screen's View dashboard button owns the transition
+      // back to the dashboard and the first dashboard-tour step.
+      document.querySelector<HTMLElement>('[data-tour="import-dashboard"]')?.click()
+    }
+  }
   const handleTourBack = () => { if (tourStep === 'import-dropzone') { setShowImportNext(false); onTourBack?.(); return } if (tourStep === 'import-confirm') { setStep('upload'); setShowImportNext(true); onTourStep?.('import-dropzone'); return } if (tourStep === 'import-dashboard') { setShowCompletion(false); setStep('upload'); setShowImportNext(false); onTourStep?.('import-confirm') } }
   if (step === 'complete') return <div className="import-page"><button className="back-button" onClick={leaveCompletion}><ArrowLeft size={17}/>Back to dashboard</button><div className={`complete-state ${showCompletion ? '' : 'thank-you-completion'}`}>{showCompletion ? <><h1 className="completion-copy">Your spending story is ready.</h1><p className="completion-copy">Added {importedCount} normalized transactions from {importable.length} statement{importable.length === 1 ? '' : 's'}.</p><div className="completion-actions completion-copy"><button className="import-button" data-tour="import-dashboard" onClick={leaveCompletion}>View dashboard <ArrowRight size={16}/></button></div></> : <CompletionCelebration />}</div><OnboardingTour step={tourStep} onSkip={onTourSkip ?? (() => undefined)} onNext={handleTourNext} onBack={handleTourBack} showImportNext={showImportNext}/></div>
   return <div className="import-page"><button className="back-button" onClick={onBack}><ArrowLeft size={17}/>Back to dashboard</button><div className="import-heading"><p className="eyebrow">STATEMENT IMPORT</p><h1>{step === 'review' ? 'Review your import' : 'Import your statements'}</h1><p>{step === 'review' ? 'A quick check before these transactions join your unified spending view.' : "Upload statements from your cards or bank accounts and we'll organize them into one clear spending view."}</p></div><input ref={picker} className="sr-only" type="file" multiple accept=".csv,.xlsx,.xls,.pdf" onChange={e => e.target.files && addFiles(e.target.files)} />

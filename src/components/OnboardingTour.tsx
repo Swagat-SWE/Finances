@@ -408,7 +408,11 @@ export default function OnboardingTour({ step, onSkip, onNext, onBack, showImpor
   const focusRight = Math.min(window.innerWidth, targetRect.left + targetRect.width + 7)
   const focusBottom = Math.min(window.innerHeight, targetRect.top + targetRect.height + 7)
   const isDashboardStep = step.startsWith('dashboard-')
-  const showNext = isDashboardStep || step === 'import-dropzone'
+  // Keep the guided flow actionable on every import screen.  The import
+  // confirmation and completion screens are not dashboard steps, but they
+  // still need a Next action so the tour can activate the highlighted control
+  // for the user.
+  const showNext = isDashboardStep || step === 'import-dropzone' || step === 'import-confirm' || step === 'import-dashboard'
   const showBack = step !== 'dashboard-import' && step !== 'dashboard-hide-numbers' && Boolean(onBack)
   return <div className="onboarding-tour" role="presentation">
     <div className="onboarding-tour-scrim-panel" aria-hidden="true" style={{ top: 0, left: 0, right: 0, height: focusTop }}/>
